@@ -35,6 +35,15 @@ A sci-fi HUD look for [Obsidian](https://obsidian.md), inspired by the holograph
 | `snippets/jarvis-callouts.css` | Custom callout types, e.g. `> [!calendar]` |
 | `snippets/jarvis-claudian.css` | Styling for the [Claudian](https://github.com/YishenTu/claudian) plugin (Claude Code in Obsidian). Requires `jarvis-hud.css` |
 
+## Supported plugins
+
+| Plugin | Support |
+|---|---|
+| [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | Adds a **Jarvis HUD** section with toggles, see below |
+| [Claudian](https://github.com/YishenTu/claudian) | Full HUD styling for the chat view via `jarvis-claudian.css` |
+
+Other plugins inherit the base colors and fonts from `jarvis-hud.css` but have no dedicated styling. Pull requests for more plugins are welcome.
+
 ## Style Settings toggles
 
 With Style Settings installed you get a **Jarvis HUD** section where you can turn off:
