@@ -2,7 +2,7 @@
 
 A sci-fi HUD look for [Obsidian](https://obsidian.md), inspired by the holographic interfaces in the Iron Man and Avengers films. Cyan glow, a faint grid, angular headings and HUD-cornered callouts, built as CSS snippets on top of the [Minimal](https://github.com/kepano/obsidian-minimal) theme.
 
-![Jarvis HUD preview](screenshots/preview.png)
+![Jarvis HUD demo](screenshots/jarvis-hud-demo.gif)
 
 ## What it does
 
@@ -24,7 +24,7 @@ A sci-fi HUD look for [Obsidian](https://obsidian.md), inspired by the holograph
 ## Installation
 
 1. Copy the files in `snippets/` into your vault's `.obsidian/snippets/` folder.
-2. In Obsidian, go to **Settings → Appearance → CSS snippets**, refresh, and enable `jarvis-hud` (and `jarvis-callouts` if you want it).
+2. In Obsidian, go to **Settings → Appearance → CSS snippets**, refresh, and enable `jarvis-hud`. Add `jarvis-callouts` and `jarvis-claudian` if you want them.
 3. Make sure you are in dark mode.
 
 ## Files
@@ -33,6 +33,7 @@ A sci-fi HUD look for [Obsidian](https://obsidian.md), inspired by the holograph
 |---|---|
 | `snippets/jarvis-hud.css` | The main HUD styling |
 | `snippets/jarvis-callouts.css` | Custom callout types, e.g. `> [!calendar]` |
+| `snippets/jarvis-claudian.css` | Styling for the [Claudian](https://github.com/YishenTu/claudian) plugin (Claude Code in Obsidian). Requires `jarvis-hud.css` |
 
 ## Style Settings toggles
 

@@ -1,0 +1,195 @@
+/* =====================================================================
+   JARVIS HUD  ·  Claudian add-on
+   Kräver jarvis-hud.css (färger, typsnitt och glöd hämtas därifrån).
+   Aktivera: Inställningar → Utseende → CSS-snippets → jarvis-claudian
+   Påverkar bara mörkt läge.
+   ===================================================================== */
+
+/* ---------- 1. Färger: Claudes orange blir arc reactor-cyan ---------- */
+.theme-dark .claudian-container,
+.theme-dark .claudian-settings {
+  --claudian-brand-claude: #00d8ff;
+  --claudian-brand-claude-rgb: 0, 216, 255;
+  --claudian-compact: #7deeff;
+  --claudian-side-chat: #ffb347;
+  --claudian-selection-check: #3dffb8;
+  --claudian-error: #ff4d5e;
+}
+
+/* ---------- 2. Välkomsttext ---------- */
+.theme-dark .claudian-welcome-text {
+  font-family: var(--j-font-hud);
+  font-weight: 700;
+  font-size: 26px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--j-cyan);
+  text-shadow: var(--j-glow);
+}
+
+/* ---------- 3. Meddelanden ---------- */
+/* Dina meddelanden: HUD-ram med hörn */
+.theme-dark .claudian-message-user > .claudian-message-content {
+  --j-c: var(--j-cyan);
+  border: 1px solid rgba(0, 216, 255, 0.22);
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--j-c), var(--j-c)) top left / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top left / 2px 10px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 2px 10px no-repeat,
+    linear-gradient(180deg, rgba(0, 216, 255, 0.10), rgba(0, 216, 255, 0.04));
+  box-shadow: 0 0 14px rgba(0, 216, 255, 0.08);
+}
+.theme-dark .claudian-message-user ::selection {
+  background: rgba(0, 216, 255, 0.35);
+}
+
+/* Claudes svar: tunn linje i vänsterkant */
+.theme-dark .claudian-message-assistant {
+  border-left: 1px solid rgba(0, 216, 255, 0.18);
+}
+
+.theme-dark .claudian-message-timestamp {
+  font-family: var(--font-monospace);
+  color: var(--tx3);
+}
+
+.theme-dark .claudian-compact-boundary-label {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--tx2);
+}
+
+/* ---------- 4. Thinking: pulserande HUD-etikett ---------- */
+.theme-dark .claudian-thinking,
+.theme-dark .claudian-thinking-label {
+  font-family: var(--j-font-hud);
+  font-style: normal;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--j-cyan);
+  text-shadow: var(--j-glow);
+}
+.theme-dark .claudian-thinking-content {
+  border-left-color: rgba(0, 216, 255, 0.25);
+  color: var(--tx2);
+}
+
+/* ---------- 5. Inmatningsrutan ---------- */
+.theme-dark .claudian-input-wrapper {
+  --claudian-input-wrapper-border-color: rgba(0, 216, 255, 0.28);
+  --claudian-input-wrapper-radius: 3px;
+  background-color: rgba(0, 12, 20, 0.85);
+}
+.theme-dark .claudian-input-wrapper:focus-within {
+  --claudian-input-wrapper-border-color: rgba(0, 216, 255, 0.6);
+  --claudian-input-wrapper-box-shadow: var(--j-glow-box);
+}
+.theme-dark .claudian-composer-editor .cm-cursor {
+  border-left-color: var(--j-cyan);
+}
+.theme-dark .claudian-composer-editor .cm-placeholder,
+.theme-dark .claudian-composer-editor:empty::before {
+  font-family: var(--j-font-hud);
+  letter-spacing: 0.06em;
+  color: var(--tx3);
+}
+.theme-dark .claudian-composer-chip {
+  border-radius: 2px;
+  border: 1px solid rgba(0, 216, 255, 0.35);
+  background: rgba(0, 216, 255, 0.08);
+  color: var(--j-cyan);
+}
+
+/* ---------- 6. Flikar ---------- */
+.theme-dark .claudian-tab-badge {
+  font-family: var(--j-font-hud);
+  font-weight: 600;
+  border-radius: 2px;
+}
+.theme-dark .claudian-tab-badge-active {
+  border-color: var(--j-cyan);
+  color: var(--j-cyan);
+  box-shadow: var(--j-glow-box);
+}
+.theme-dark .claudian-tab-badge-streaming {
+  border-color: var(--j-cyan);
+  animation: jarvis-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---------- 7. Verktygsanrop: terminalkänsla ---------- */
+.theme-dark .claudian-tool-icon,
+.theme-dark .claudian-tool-icon svg {
+  color: var(--j-cyan);
+}
+.theme-dark .claudian-tool-name {
+  color: var(--j-cyan);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.theme-dark .claudian-tool-summary {
+  color: var(--tx2);
+}
+.theme-dark .claudian-tool-bash-command {
+  color: #7deeff;
+}
+
+/* ---------- 8. Kod och diffar ---------- */
+.theme-dark .claudian-code-wrapper pre,
+.theme-dark .claudian-message-content pre {
+  background-color: rgba(0, 12, 20, 0.85);
+  border: 1px solid rgba(0, 216, 255, 0.22);
+  border-left: 2px solid var(--j-cyan);
+  border-radius: 2px;
+}
+.theme-dark .claudian-container .claudian-message-content :not(pre) > code {
+  color: #7deeff;
+  border: 1px solid rgba(0, 216, 255, 0.18);
+  border-radius: 2px;
+}
+.theme-dark .claudian-code-wrapper .claudian-code-lang-label {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--j-cyan);
+}
+.theme-dark .claudian-diff-ins {
+  background-color: rgba(61, 255, 184, 0.12);
+  color: #b6ffe4;
+}
+.theme-dark .claudian-diff-del {
+  background-color: rgba(255, 77, 94, 0.12);
+  color: #ffb3ba;
+}
+
+/* ---------- 9. Att göra-listor och subagenter ---------- */
+.theme-dark .claudian-todo-list-container .claudian-todo-in_progress .claudian-todo-status-icon {
+  color: var(--j-cyan);
+  filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.6));
+}
+.theme-dark .claudian-todo-list-container .claudian-todo-completed .claudian-todo-status-icon {
+  color: #3dffb8;
+}
+.theme-dark .claudian-subagent-section-title {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.theme-dark .claudian-subagent-status.status-running { color: var(--j-cyan); }
+.theme-dark .claudian-subagent-status.status-completed { color: #3dffb8; }
+.theme-dark .claudian-subagent-status.status-error { color: #ff4d5e; }
+
+/* ---------- 10. Zen-läge ---------- */
+.theme-dark .claudian-zen-bar {
+  border-top: 1px solid rgba(0, 216, 255, 0.3);
+  box-shadow: 0 -6px 20px rgba(0, 216, 255, 0.06);
+}
+
+/* ---------- 11. Av-knappar och tillgänglighet ---------- */
+.theme-dark.jarvis-no-motion .claudian-tab-badge-streaming { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-dark .claudian-tab-badge-streaming { animation: none; }
+}
