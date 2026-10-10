@@ -2,6 +2,8 @@
 
 A sci-fi HUD look for [Obsidian](https://obsidian.md), inspired by the holographic interfaces in the Iron Man and Avengers films. Cyan glow, a faint grid, angular headings and HUD-cornered callouts, built as CSS snippets on top of the [Minimal](https://github.com/kepano/obsidian-minimal) theme.
 
+Companion to [terminal-jarvis-hud](https://github.com/andyjohansson/terminal-jarvis-hud).
+
 ![Jarvis HUD demo](screenshots/jarvis-hud-demo.gif)
 
 ## What it does
