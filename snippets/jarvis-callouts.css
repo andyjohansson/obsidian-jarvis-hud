@@ -1,0 +1,7 @@
+/* Jarvis callouts. Enable in Settings → Appearance → CSS snippets. */
+
+/* > [!calendar]- Live view  (used in the daily note for the embedded meetings view) */
+.callout[data-callout="calendar"] {
+  --callout-color: 99, 102, 241;
+  --callout-icon: lucide-calendar;
+}

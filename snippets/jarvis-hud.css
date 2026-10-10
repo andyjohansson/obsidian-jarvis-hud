@@ -1,0 +1,406 @@
+/* =====================================================================
+   JARVIS HUD  ·  snippet för Minimal (dark mode)
+   Aktivera: Inställningar → Utseende → CSS-snippets → jarvis-hud
+   Påverkar bara mörkt läge. Ljust läge lämnas orört.
+   Med pluginet Style Settings kan du slå av rutnät, glöd och animationer.
+   ===================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+/* @settings
+name: Jarvis HUD
+id: jarvis-hud
+settings:
+  -
+    id: jarvis-no-grid
+    title: Dölj bakgrundsrutnät
+    type: class-toggle
+  -
+    id: jarvis-no-glow
+    title: Stäng av glöd
+    type: class-toggle
+  -
+    id: jarvis-no-motion
+    title: Stäng av animationer
+    type: class-toggle
+  -
+    id: jarvis-no-statusline
+    title: Dölj "J.A.R.V.I.S. ONLINE" i statusraden
+    type: class-toggle
+*/
+
+/* ---------- 1. Palett och Minimal-variabler ---------- */
+body.theme-dark,
+body.theme-dark.minimal-default-dark,
+body.theme-dark.minimal-dark-black,
+body.theme-dark.minimal-dark-tonal {
+  /* Jarvis-färger */
+  --j-cyan: #00d8ff;
+  --j-cyan-rgb: 0, 216, 255;
+  --j-cyan-soft: rgba(0, 216, 255, 0.14);
+  --j-cyan-line: rgba(0, 216, 255, 0.22);
+  --j-gold: #ffb347;
+  --j-gold-rgb: 255, 179, 71;
+  --j-red: #ff4d5e;
+  --j-glow: 0 0 6px rgba(0, 216, 255, 0.55), 0 0 18px rgba(0, 216, 255, 0.18);
+  --j-glow-box: 0 0 0 1px rgba(0, 216, 255, 0.35), 0 0 16px rgba(0, 216, 255, 0.15);
+
+  /* Typsnitt */
+  --j-font-hud: "Rajdhani", "Orbitron", "Eurostile", "Bahnschrift", var(--font-interface-theme), sans-serif;
+  --font-monospace-theme: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+
+  /* Minimal-bas */
+  --base-h: 205;
+  --base-s: 45%;
+  --base-l: 5%;
+  --accent-h: 190;
+  --accent-s: 100%;
+  --accent-l: 50%;
+
+  --bg1: #05090f;          /* editor */
+  --bg2: #03060b;          /* sidopaneler */
+  --bg3: rgba(0, 216, 255, 0.08);
+  --ui1: rgba(0, 216, 255, 0.12);
+  --ui2: rgba(0, 216, 255, 0.24);
+  --ui3: rgba(0, 216, 255, 0.40);
+  --tx1: #d4f3ff;
+  --tx2: #8db4c6;
+  --tx3: #4e7082;
+  --tx4: #6f93a5;
+  --ax1: var(--j-cyan);
+  --ax2: #5ce6ff;
+  --ax3: #00b4d8;
+  --hl1: rgba(0, 216, 255, 0.22);
+  --hl2: rgba(255, 179, 71, 0.28);
+
+  /* Obsidian-kärnvariabler */
+  --text-selection: rgba(0, 216, 255, 0.25);
+  --text-highlight-bg: rgba(var(--j-gold-rgb), 0.22);
+  --caret-color: var(--j-cyan);
+  --link-color: var(--j-cyan);
+  --link-color-hover: #7deeff;
+  --link-external-color: var(--j-cyan);
+  --link-unresolved-color: var(--tx3);
+  --tag-color: var(--j-cyan);
+  --tag-background: rgba(0, 216, 255, 0.06);
+  --tag-border-color: rgba(0, 216, 255, 0.35);
+  --tag-border-width: 1px;
+  --tag-radius: 2px;
+  --checkbox-color: var(--j-cyan);
+  --checkbox-border-color: var(--ui3);
+  --checkbox-radius: 2px;
+  --interactive-accent: var(--j-cyan);
+  --interactive-accent-hover: #5ce6ff;
+  --text-on-accent: #001218;
+  --blockquote-border-color: var(--j-cyan);
+  --hr-color: var(--j-cyan-line);
+  --code-background: rgba(0, 216, 255, 0.04);
+  --scrollbar-thumb-bg: rgba(0, 216, 255, 0.18);
+  --scrollbar-active-thumb-bg: rgba(0, 216, 255, 0.4);
+
+  /* Graf */
+  --graph-node: #6fdcff;
+  --graph-node-focused: var(--j-cyan);
+  --graph-node-unresolved: #2c4a58;
+  --graph-node-tag: var(--j-gold);
+  --graph-node-attachment: #3f8fa6;
+  --graph-line: rgba(0, 216, 255, 0.18);
+}
+
+/* ---------- 2. Bakgrund: rutnät och svag reaktorglöd ---------- */
+.theme-dark .workspace-leaf-content .view-content {
+  background-color: var(--bg1);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(0, 216, 255, 0.07), transparent 70%),
+    linear-gradient(rgba(0, 216, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 216, 255, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+  background-attachment: local, local, local;
+}
+.theme-dark.jarvis-no-grid .workspace-leaf-content .view-content {
+  background-image: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(0, 216, 255, 0.07), transparent 70%);
+  background-size: 100% 100%;
+}
+.theme-dark .markdown-source-view,
+.theme-dark .markdown-reading-view,
+.theme-dark .markdown-preview-view,
+.theme-dark .cm-scroller {
+  background: transparent;
+}
+
+/* ---------- 3. Rubriker ---------- */
+.theme-dark .inline-title,
+.theme-dark .markdown-rendered h1, .theme-dark .HyperMD-header-1,
+.theme-dark .markdown-rendered h2, .theme-dark .HyperMD-header-2,
+.theme-dark .markdown-rendered h3, .theme-dark .HyperMD-header-3,
+.theme-dark .markdown-rendered h4, .theme-dark .HyperMD-header-4,
+.theme-dark .markdown-rendered h5, .theme-dark .HyperMD-header-5,
+.theme-dark .markdown-rendered h6, .theme-dark .HyperMD-header-6 {
+  font-family: var(--j-font-hud);
+  letter-spacing: 0.06em;
+}
+.theme-dark .inline-title {
+  color: var(--j-cyan);
+  text-transform: uppercase;
+  font-weight: 700;
+  text-shadow: var(--j-glow);
+}
+.theme-dark .markdown-rendered h1,
+.theme-dark .HyperMD-header-1 {
+  color: var(--j-cyan);
+  text-transform: uppercase;
+  font-weight: 700;
+  text-shadow: var(--j-glow);
+}
+.theme-dark .markdown-rendered h1 {
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, var(--j-cyan), rgba(0, 216, 255, 0.15) 60%, transparent) 1;
+}
+.theme-dark .markdown-rendered h2,
+.theme-dark .HyperMD-header-2 {
+  color: #9be9ff;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.theme-dark .markdown-rendered h2::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 0.8em;
+  margin-right: 0.5em;
+  background: var(--j-cyan);
+  box-shadow: var(--j-glow);
+  vertical-align: baseline;
+}
+.theme-dark .markdown-rendered h3, .theme-dark .HyperMD-header-3 { color: #bdefff; font-weight: 600; }
+.theme-dark .markdown-rendered h4, .theme-dark .HyperMD-header-4,
+.theme-dark .markdown-rendered h5, .theme-dark .HyperMD-header-5,
+.theme-dark .markdown-rendered h6, .theme-dark .HyperMD-header-6 {
+  color: var(--tx2);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ---------- 4. Länkar, markering, fetstil ---------- */
+.theme-dark .markdown-rendered a.internal-link,
+.theme-dark .cm-hmd-internal-link {
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(0, 216, 255, 0.45);
+}
+.theme-dark .markdown-rendered a:hover,
+.theme-dark .cm-hmd-internal-link:hover {
+  text-shadow: var(--j-glow);
+}
+.theme-dark .markdown-rendered strong,
+.theme-dark .cm-strong {
+  color: #e9fbff;
+}
+.theme-dark .markdown-rendered mark,
+.theme-dark .cm-highlight {
+  background: rgba(var(--j-gold-rgb), 0.18);
+  color: #ffd9a3;
+  border-bottom: 1px solid rgba(var(--j-gold-rgb), 0.6);
+  border-radius: 0;
+}
+.theme-dark .markdown-rendered hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--j-cyan) 50%, transparent);
+  opacity: 0.5;
+}
+
+/* ---------- 5. Callouts med HUD-hörn ---------- */
+.theme-dark .callout {
+  --j-c: rgb(var(--callout-color));
+  border: 1px solid rgba(var(--callout-color), 0.22);
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--j-c), var(--j-c)) top left / 14px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top left / 2px 14px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top right / 14px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top right / 2px 14px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom left / 14px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom left / 2px 14px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 14px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 2px 14px no-repeat,
+    linear-gradient(180deg, rgba(var(--callout-color), 0.10), rgba(var(--callout-color), 0.03));
+  box-shadow: 0 0 18px rgba(var(--callout-color), 0.08);
+}
+.theme-dark .callout-title {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* ---------- 6. Kod, tabeller, citat ---------- */
+.theme-dark .markdown-rendered pre,
+.theme-dark .HyperMD-codeblock {
+  background-color: rgba(0, 12, 20, 0.85) !important;
+}
+.theme-dark .markdown-rendered pre {
+  border: 1px solid var(--j-cyan-line);
+  border-left: 2px solid var(--j-cyan);
+  border-radius: 2px;
+}
+.theme-dark .markdown-rendered :not(pre) > code,
+.theme-dark .cm-inline-code {
+  color: #7deeff;
+  border: 1px solid rgba(0, 216, 255, 0.18);
+  border-radius: 2px;
+}
+.theme-dark .markdown-rendered table th,
+.theme-dark .table-wrapper th {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--j-cyan);
+  border-bottom: 1px solid rgba(0, 216, 255, 0.5);
+}
+.theme-dark .markdown-rendered table tr:hover td {
+  background: rgba(0, 216, 255, 0.04);
+}
+.theme-dark .markdown-rendered blockquote {
+  background: linear-gradient(90deg, rgba(0, 216, 255, 0.06), transparent 70%);
+}
+
+/* ---------- 7. Checkboxar och taggar ---------- */
+.theme-dark input[type="checkbox"] {
+  border-radius: 2px;
+}
+.theme-dark input[type="checkbox"]:checked {
+  background-color: var(--j-cyan);
+  border-color: var(--j-cyan);
+  box-shadow: var(--j-glow);
+}
+.theme-dark .markdown-rendered .task-list-item.is-checked,
+.theme-dark .HyperMD-task-line[data-task="x"] {
+  color: var(--tx3);
+}
+.theme-dark a.tag,
+.theme-dark .cm-hashtag {
+  font-family: var(--j-font-hud);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- 8. Egenskaper (frontmatter) ---------- */
+.theme-dark .metadata-container {
+  border: 1px solid var(--j-cyan-line);
+  border-radius: 2px;
+  background: rgba(0, 216, 255, 0.03);
+  padding: 4px 10px;
+}
+/* Fäll-pilen ska ligga inne i ramen, inte utanför */
+.theme-dark .metadata-properties-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.theme-dark .metadata-properties-heading .collapse-indicator {
+  position: static;
+  margin: 0;
+  padding: 0;
+  transform-origin: center;
+}
+.theme-dark .metadata-property-key-input,
+.theme-dark .metadata-properties-heading {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tx2);
+}
+
+/* ---------- 9. Gränssnitt: flikar, filträd, paneler ---------- */
+.theme-dark .workspace-tab-header-inner-title,
+.theme-dark .nav-folder-title-content,
+.theme-dark .workspace-sidedock-vault-profile,
+.theme-dark .status-bar {
+  font-family: var(--j-font-hud);
+  letter-spacing: 0.04em;
+}
+.theme-dark .nav-folder-title-content {
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.92em;
+}
+.theme-dark .workspace-tab-header.is-active {
+  box-shadow: inset 0 2px 0 var(--j-cyan);
+}
+.theme-dark .workspace-tab-header.is-active .workspace-tab-header-inner-title {
+  color: var(--j-cyan);
+}
+.theme-dark .nav-file-title.is-active,
+.theme-dark .tree-item-self.is-active {
+  color: var(--j-cyan);
+  background: linear-gradient(90deg, rgba(0, 216, 255, 0.14), rgba(0, 216, 255, 0.02));
+  box-shadow: inset 2px 0 0 var(--j-cyan);
+  border-radius: 0 2px 2px 0;
+}
+.theme-dark .nav-file-title:hover,
+.theme-dark .tree-item-self:hover {
+  background: rgba(0, 216, 255, 0.06);
+}
+
+/* Kommandopalett, snabbväxlare och modaler */
+.theme-dark .modal,
+.theme-dark .prompt,
+.theme-dark .menu,
+.theme-dark .suggestion-container {
+  border: 1px solid rgba(0, 216, 255, 0.35);
+  border-radius: 3px;
+  box-shadow: var(--j-glow-box), 0 12px 40px rgba(0, 0, 0, 0.6);
+  background-color: rgba(4, 10, 16, 0.96);
+}
+.theme-dark .prompt-input {
+  font-family: var(--j-font-hud);
+  letter-spacing: 0.04em;
+  caret-color: var(--j-cyan);
+}
+.theme-dark .suggestion-item.is-selected,
+.theme-dark .menu-item.selected:not(.is-disabled):not(.is-label) {
+  background: rgba(0, 216, 255, 0.12);
+  box-shadow: inset 2px 0 0 var(--j-cyan);
+}
+.theme-dark .mod-cta {
+  font-family: var(--j-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* ---------- 10. Statusrad: J.A.R.V.I.S. ONLINE ---------- */
+.theme-dark .status-bar {
+  color: var(--tx2);
+  border-top: 1px solid var(--j-cyan-line);
+  background: var(--bg2);
+}
+.theme-dark .status-bar::before {
+  content: "J.A.R.V.I.S. ONLINE";
+  order: -1;
+  margin-right: auto;
+  padding: 0 10px 0 18px;
+  color: var(--j-cyan);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-shadow: var(--j-glow);
+  background: radial-gradient(circle at 6px 50%, var(--j-cyan) 0 3px, transparent 4px);
+  animation: jarvis-pulse 2.8s ease-in-out infinite;
+}
+.theme-dark.jarvis-no-statusline .status-bar::before { content: none; }
+
+@keyframes jarvis-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ---------- 11. Av-knappar (Style Settings) och tillgänglighet ---------- */
+.theme-dark.jarvis-no-glow {
+  --j-glow: none;
+  --j-glow-box: 0 0 0 1px rgba(0, 216, 255, 0.35);
+}
+.theme-dark.jarvis-no-motion .status-bar::before { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-dark .status-bar::before { animation: none; }
+}
