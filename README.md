@@ -40,6 +40,7 @@ A sci-fi HUD look for [Obsidian](https://obsidian.md), inspired by the holograph
 | Plugin | Support |
 |---|---|
 | [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | Adds a **Jarvis HUD** section with toggles, see below |
+| [Calendar](https://github.com/liamcain/obsidian-calendar-plugin) | Works with the HUD styling |
 | [Claudian](https://github.com/YishenTu/claudian) | Full HUD styling for the chat view via `jarvis-claudian.css` |
 
 Other plugins inherit the base colors and fonts from `jarvis-hud.css` but have no dedicated styling. Pull requests for more plugins are welcome.

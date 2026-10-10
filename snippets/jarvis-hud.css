@@ -13,19 +13,19 @@ id: jarvis-hud
 settings:
   -
     id: jarvis-no-grid
-    title: Dölj bakgrundsrutnät
+    title: Hide background grid
     type: class-toggle
   -
     id: jarvis-no-glow
-    title: Stäng av glöd
+    title: Turn off glow
     type: class-toggle
   -
     id: jarvis-no-motion
-    title: Stäng av animationer
+    title: Turn off animations
     type: class-toggle
   -
     id: jarvis-no-statusline
-    title: Dölj "J.A.R.V.I.S. ONLINE" i statusraden
+    title: Hide "J.A.R.V.I.S. ONLINE" in the status bar
     type: class-toggle
 */
 
