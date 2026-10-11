@@ -29,6 +29,14 @@ Want the same look in your terminal? Try [Terminal Jarvis HUD](https://github.co
 2. In Obsidian, go to **Settings → Appearance → CSS snippets**, refresh, and enable `jarvis-hud`. Add `jarvis-callouts` and `jarvis-claudian` if you want them.
 3. Make sure you are in dark mode.
 
+### Optional: Jarvis HUD FX plugin
+
+A tiny companion plugin that adds a one-shot "finishing touch" when a Claudian session completes: a scan line sweeps across the session row and a shockwave ring fades out where the arc reactor spinner was. CSS alone cannot tell a session that just finished from one that is re-rendered later, so this part needs a few lines of JavaScript. It does not modify Claudian.
+
+1. Copy the files in `plugin/` into `.obsidian/plugins/jarvis-hud-fx/` in your vault.
+2. In Obsidian, go to **Settings → Community plugins**, refresh, and enable **Jarvis HUD FX**.
+3. Keep `jarvis-claudian` enabled, since the effect itself lives in that snippet.
+
 ## Files
 
 | File | Purpose |
@@ -36,6 +44,7 @@ Want the same look in your terminal? Try [Terminal Jarvis HUD](https://github.co
 | `snippets/jarvis-hud.css` | The main HUD styling |
 | `snippets/jarvis-callouts.css` | Custom callout types, e.g. `> [!calendar]` |
 | `snippets/jarvis-claudian.css` | Styling for the [Claudian](https://github.com/YishenTu/claudian) plugin (Claude Code in Obsidian). Requires `jarvis-hud.css` |
+| `plugin/` | Optional Jarvis HUD FX plugin, the completion effect for Claudian sessions |
 
 ## Supported plugins
 

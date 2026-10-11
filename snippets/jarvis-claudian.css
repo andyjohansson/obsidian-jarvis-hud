@@ -245,6 +245,45 @@
   50% { opacity: 1; filter: drop-shadow(0 0 3px #e6fbff) drop-shadow(0 0 8px #00d8ff); }
 }
 
+/* Klar: skanningslinje över raden och en chockvåg där reaktorn satt.
+   Kräver pluginet Jarvis HUD FX (plugin/), som sätter klassen bara när en
+   session precis blivit klar. Utan pluginet händer ingenting. */
+.theme-dark .claudian-history-item.jarvis-just-completed {
+  position: relative;
+  overflow: hidden;
+}
+.theme-dark .claudian-history-item.jarvis-just-completed::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0, 216, 255, 0.1) 35%, rgba(0, 216, 255, 0.3) 47%, rgba(230, 251, 255, 0.6) 50%, transparent 53%);
+  background-size: 250% 100%;
+  animation: jarvis-done-scan 1s ease-out var(--jarvis-fx-offset, 0ms) 1 both;
+}
+.theme-dark .claudian-history-item.jarvis-just-completed::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 12px;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--j-cyan);
+  pointer-events: none;
+  animation: jarvis-done-ring 0.9s ease-out var(--jarvis-fx-offset, 0ms) 1 both;
+}
+@keyframes jarvis-done-scan {
+  from { background-position: 100% 0; opacity: 1; }
+  80% { opacity: 1; }
+  to { background-position: -50% 0; opacity: 0; }
+}
+@keyframes jarvis-done-ring {
+  0% { transform: scale(0.4); opacity: 1; box-shadow: 0 0 10px #00d8ff, inset 0 0 6px #e6fbff; }
+  100% { transform: scale(2.6); opacity: 0; box-shadow: 0 0 2px rgba(0, 216, 255, 0); }
+}
+
 /* Övriga laddsnurror: cyan med glöd */
 .theme-dark .claudian-inline-spinner,
 .theme-dark .claudian-tab-hydration-loading::before {
@@ -264,10 +303,14 @@
 .theme-dark.jarvis-no-motion .claudian-session-running-indicator::after,
 .theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::before,
 .theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::after { animation: none; }
+.theme-dark.jarvis-no-motion .jarvis-just-completed::before,
+.theme-dark.jarvis-no-motion .jarvis-just-completed::after { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .theme-dark .claudian-tab-badge-streaming,
   .theme-dark .claudian-session-running-indicator::before,
   .theme-dark .claudian-session-running-indicator::after,
   .theme-dark .claudian-session-group-running-indicator::before,
   .theme-dark .claudian-session-group-running-indicator::after { animation: none; }
+  .theme-dark .jarvis-just-completed::before,
+  .theme-dark .jarvis-just-completed::after { display: none; }
 }
