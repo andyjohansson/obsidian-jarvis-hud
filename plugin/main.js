@@ -14,10 +14,10 @@
  *    new line.
  *
  * 3. Reactor. Marks the welcome screen "jarvis-charging" while you type, so
- *    the arc reactor behind it powers up, and "jarvis-kick" on every
- *    keystroke. Claudian hides the welcome screen at once when you send, so
- *    the plugin lays a copy over it, adds the ignition layers (flash, waves,
- *    rays, sparks) and removes it when the animation is done. Visual only.
+ *    the arc reactor behind it powers up. Claudian hides the welcome screen
+ *    at once when you send, so the plugin lays a copy over it, adds the
+ *    ignition layers (flash and shockwave) and removes it when the animation
+ *    is done. Visual only.
  */
 const { Plugin } = require("obsidian");
 
@@ -40,11 +40,9 @@ const ACTIVE_WELCOME = ".claudian-tab-content:not(.claudian-hidden) .claudian-we
 const INPUT = ".claudian-input";
 const HIDDEN_CLASS = "claudian-hidden";
 const CHARGING_CLASS = "jarvis-charging";
-const KICK_CLASS = "jarvis-kick";
 const EXIT_CLASS = "jarvis-welcome-exit";
 // Must cover the longest exit animation in jarvis-claudian.css.
-const EXIT_MS = 1350;
-const SPARKS = 18;
+const EXIT_MS = 950;
 
 // ---------- Greetings ----------
 // {time} is replaced with the current time, e.g. 01:42.
@@ -264,21 +262,14 @@ function pickGreeting(now, last) {
   return pick(fresh.length > 0 ? fresh : lines).replace("{time}", time);
 }
 
-// Extra layers for the ignition. Sparks get a random direction, reach and delay.
+// Extra layers for the ignition: a core flash and a shockwave.
 function burst() {
   const el = document.createElement("div");
   el.className = "jarvis-burst";
-  const layer = (name) => {
-    const child = document.createElement("div");
-    child.className = `jarvis-burst-${name}`;
-    return el.appendChild(child);
-  };
-  ["flash", "wave", "wave", "rays"].forEach(layer);
-  for (let i = 0; i < SPARKS; i++) {
-    const spark = layer("spark");
-    spark.style.setProperty("--a", `${Math.round((360 / SPARKS) * i + Math.random() * 14)}deg`);
-    spark.style.setProperty("--d", `${Math.round(160 + Math.random() * 220)}px`);
-    spark.style.setProperty("--t", `${Math.round(Math.random() * 90)}ms`);
+  for (const name of ["flash", "wave"]) {
+    const layer = document.createElement("div");
+    layer.className = `jarvis-burst-${name}`;
+    el.appendChild(layer);
   }
   return el;
 }
@@ -332,14 +323,7 @@ module.exports = class JarvisHudFx extends Plugin {
       // Claudian moves the active tab's input box into a shared slot, so
       // find the welcome screen through the visible tab instead.
       const welcome = input?.closest(CONTAINER)?.querySelector(ACTIVE_WELCOME);
-      if (!welcome) return;
-      const charging = hasText(input);
-      welcome.classList.toggle(CHARGING_CLASS, charging);
-      // Restart the throb on every keystroke.
-      welcome.classList.remove(KICK_CLASS);
-      if (!charging) return;
-      void welcome.offsetWidth;
-      welcome.classList.add(KICK_CLASS);
+      welcome?.classList.toggle(CHARGING_CLASS, hasText(input));
     });
     this.app.workspace.onLayoutReady(() => {
       this.greet();
@@ -352,7 +336,7 @@ module.exports = class JarvisHudFx extends Plugin {
     this.observer?.disconnect();
     this.welcomeObserver?.disconnect();
     document.querySelectorAll(`.${EXIT_CLASS}`).forEach((el) => el.remove());
-    document.querySelectorAll(`.${CHARGING_CLASS}, .${KICK_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS, KICK_CLASS));
+    document.querySelectorAll(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
     document.querySelectorAll(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
   }
 
@@ -404,7 +388,7 @@ module.exports = class JarvisHudFx extends Plugin {
   // typing, so opening an existing chat does not fire the reactor.
   launch(welcome) {
     if (!welcome.classList.contains(CHARGING_CLASS)) return;
-    welcome.classList.remove(CHARGING_CLASS, KICK_CLASS);
+    welcome.classList.remove(CHARGING_CLASS);
     const wrapper = welcome.closest(MESSAGES_WRAPPER);
     if (!wrapper) return;
     const ghost = welcome.cloneNode(true);
