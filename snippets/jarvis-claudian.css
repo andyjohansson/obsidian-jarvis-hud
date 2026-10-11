@@ -274,7 +274,7 @@
   content: "";
   position: absolute;
   top: 50%;
-  inset-inline-end: 17px;
+  inset-inline-end: 16px;
   width: 5px;
   height: 10px;
   margin-top: -7px;
@@ -296,6 +296,81 @@
   50% { transform: rotate(45deg) scale(1); filter: drop-shadow(0 0 3px #00d8ff); }
   80% { transform: rotate(45deg) scale(1); opacity: 1; }
   100% { transform: rotate(45deg) scale(1); opacity: 0; }
+}
+
+/* Statuskolumn: varje rad har en fast yta i högerkanten där spinner, bock,
+   osedd-punkt och Claudians egna statusikoner delar samma mittpunkt
+   (20 px från kanten). Texten flyttar sig aldrig när statusen ändras. */
+.theme-dark .claudian-session-sidebar .claudian-history-item {
+  padding-inline-end: 32px;
+}
+.theme-dark .claudian-session-sidebar .claudian-history-item .claudian-session-running-indicator,
+.theme-dark .claudian-session-sidebar .claudian-history-item .claudian-session-status-indicator {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 12px;
+  margin-top: -8px;
+}
+.theme-dark .claudian-session-sidebar .claudian-history-item .claudian-session-status-indicator {
+  width: 16px;
+  height: 16px;
+}
+
+/* Klar men osedd: liten, stilla cyan punkt i statuskolumnen.
+   Claudian sätter --attention på raden tills sessionen öppnats.
+   Punkten väntar tills klar-effekten ovan är färdig. */
+.theme-dark .claudian-session-sidebar .claudian-history-item--attention:not(.jarvis-just-completed)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 18px;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--j-cyan);
+  box-shadow: 0 0 4px rgba(0, 216, 255, 0.6);
+  opacity: 0.8;
+  pointer-events: none;
+}
+/* Ersätter Claudians blinkande rubrik med fast, ljus text. Punkten räcker som signal. */
+.theme-dark .claudian-session-sidebar .claudian-history-item--attention .claudian-history-item-title {
+  color: var(--text-normal);
+  animation: none;
+}
+
+/* Aktiv chatt: glödande cyan markör i vänsterkant, svag ljuskägla och cyan rubrik.
+   Ritas med bakgrundslager, så klar-effektens ::before och ::after lämnas ifred. */
+.theme-dark .claudian-session-sidebar .claudian-history-item.active,
+.theme-dark .claudian-session-sidebar .claudian-history-item.active:hover {
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--j-cyan), var(--j-cyan)) left / 2px 100% no-repeat,
+    linear-gradient(90deg, rgba(0, 216, 255, 0.35), transparent 10px) left / 100% 100% no-repeat,
+    linear-gradient(90deg, rgba(0, 216, 255, 0.12), rgba(0, 216, 255, 0.02) 70%, transparent);
+}
+.theme-dark .claudian-session-sidebar .claudian-history-item.active .claudian-history-item-title {
+  color: var(--j-cyan);
+  text-shadow: 0 0 6px rgba(0, 216, 255, 0.45);
+}
+
+/* Flikar som är klara men osedda: cyan ram och samma punkt i hörnet */
+.theme-dark .claudian-tab-badge-review {
+  position: relative;
+  border-color: rgba(0, 216, 255, 0.7);
+  color: var(--j-cyan);
+}
+.theme-dark .claudian-tab-badge-review::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--j-cyan);
+  box-shadow: 0 0 4px rgba(0, 216, 255, 0.6);
+  opacity: 0.8;
 }
 
 /* Övriga laddsnurror: cyan med glöd */
