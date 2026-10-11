@@ -41,6 +41,194 @@
   text-wrap: balance;
 }
 
+/* Arc reactor i bakgrunden: laddikonen i stort format och nedtonad. Samma
+   segmentring med ljussvans, samma motroterande bågar och glödande kärna,
+   bara lugnare. --jarvis-reactor-charge (0 till 1) styr hur starkt den
+   lyser. Pluginet Jarvis HUD FX sätter jarvis-charging medan du skriver:
+   reaktorn laddas upp och andas långsamt. Andningen är bara opacitet, så
+   den kostar nästan ingenting. */
+@property --jarvis-reactor-charge {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.theme-dark .claudian-welcome {
+  --jarvis-reactor-size: min(440px, 85%);
+  --jarvis-reactor-charge: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(230, 251, 255, calc(0.07 + 0.07 * var(--jarvis-reactor-charge))),
+    rgba(0, 216, 255, calc(0.05 + 0.05 * var(--jarvis-reactor-charge))) 40px,
+    rgba(0, 216, 255, 0.015) 120px, transparent 200px);
+  transition: --jarvis-reactor-charge 0.8s ease;
+}
+.theme-dark .claudian-welcome.jarvis-charging {
+  --jarvis-reactor-charge: 1;
+}
+.theme-dark .claudian-welcome::before,
+.theme-dark .claudian-welcome::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* Yttre ring: åtta segment med svans som sveper medurs */
+.theme-dark .claudian-welcome::before {
+  width: var(--jarvis-reactor-size);
+  background: conic-gradient(rgba(0, 216, 255, 0.01), rgba(0, 216, 255, calc(0.2 + 0.2 * var(--jarvis-reactor-charge))));
+  -webkit-mask:
+    radial-gradient(closest-side, transparent 88%, #000 88.5% 99%, transparent 99.5%),
+    repeating-conic-gradient(#000 0 34deg, transparent 34deg 45deg);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  scale: calc(1 + 0.03 * var(--jarvis-reactor-charge));
+  filter: drop-shadow(0 0 8px rgba(0, 216, 255, calc(0.3 + 0.3 * var(--jarvis-reactor-charge))));
+  animation: jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite;
+}
+/* Inre bågar som snurrar moturs */
+.theme-dark .claudian-welcome::after {
+  width: calc(var(--jarvis-reactor-size) * 0.56);
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-top-color: rgba(125, 238, 255, calc(0.16 + 0.2 * var(--jarvis-reactor-charge)));
+  border-bottom-color: rgba(125, 238, 255, calc(0.16 + 0.2 * var(--jarvis-reactor-charge)));
+  scale: calc(1 - 0.05 * var(--jarvis-reactor-charge));
+  filter: drop-shadow(0 0 6px rgba(0, 216, 255, calc(0.3 + 0.3 * var(--jarvis-reactor-charge))));
+  animation: jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse;
+}
+.theme-dark .claudian-welcome.jarvis-charging::before {
+  animation:
+    jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite,
+    jarvis-reactor-breathe 1.8s ease-in-out infinite;
+}
+.theme-dark .claudian-welcome.jarvis-charging::after {
+  animation:
+    jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse,
+    jarvis-reactor-breathe 1.8s ease-in-out infinite;
+}
+@keyframes jarvis-reactor-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+/* Tändning när du skickar: Claudian döljer välkomstvyn direkt, så pluginet
+   lägger en kopia ovanpå med två extra lager (.jarvis-burst) och tar bort
+   den efteråt. Bara transform och opacitet animeras, så allt körs på
+   grafikkortet och laggar inte medan Claudian ritar upp ditt meddelande.
+   0-0,2 s   bågarna sugs in i kärnan och ringen drar ihop sig
+   0,2 s     kärnan blixtrar, en tryckvåg går ut och ringen slår ut
+   därefter  texten slocknar som en gammal bildskärm och allt tonar ut */
+.theme-dark .claudian-welcome.jarvis-welcome-exit {
+  --jarvis-reactor-charge: 1.8;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  transition: none;
+  animation: jarvis-exit-fade 0.9s linear forwards;
+}
+.theme-dark .claudian-welcome.jarvis-welcome-exit::before,
+.theme-dark .claudian-welcome.jarvis-welcome-exit::after,
+.theme-dark .claudian-welcome.jarvis-welcome-exit .claudian-welcome-text,
+.jarvis-burst > * {
+  will-change: transform, opacity;
+}
+.theme-dark .claudian-welcome.jarvis-welcome-exit::before {
+  animation:
+    jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite,
+    jarvis-exit-ring 0.85s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+}
+.theme-dark .claudian-welcome.jarvis-welcome-exit::after {
+  animation:
+    jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse,
+    jarvis-exit-arcs 0.22s cubic-bezier(0.6, 0, 0.9, 0.5) forwards;
+}
+.theme-dark .claudian-welcome.jarvis-welcome-exit .claudian-welcome-text {
+  animation: jarvis-exit-text 0.6s linear forwards;
+}
+.jarvis-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: -1;
+}
+.jarvis-burst > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  translate: -50% -50%;
+  border-radius: 50%;
+  opacity: 0;
+}
+/* Blixten i kärnan */
+.jarvis-burst-flash {
+  width: 180px;
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(170, 247, 255, 0.6) 30%, rgba(0, 216, 255, 0.15) 65%, transparent);
+  animation: jarvis-burst-flash 0.6s ease-out 0.18s forwards;
+}
+/* Tryckvågen: en tunn ring som skalas upp över vyn */
+.jarvis-burst-wave {
+  width: 800px;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  border: 2px solid rgba(190, 248, 255, 0.8);
+  animation: jarvis-burst-wave 0.7s cubic-bezier(0.1, 0.6, 0.3, 1) 0.2s forwards;
+}
+@keyframes jarvis-exit-fade {
+  0%, 55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes jarvis-exit-ring {
+  0% { scale: 1.03; rotate: 0deg; opacity: 1; }
+  22% { scale: 0.92; rotate: 20deg; opacity: 1; }
+  100% { scale: 1.9; rotate: 150deg; opacity: 0; }
+}
+@keyframes jarvis-exit-arcs {
+  0% { scale: 0.95; rotate: 0deg; opacity: 1; }
+  100% { scale: 0.05; rotate: -300deg; opacity: 0.5; }
+}
+@keyframes jarvis-exit-text {
+  0% { opacity: 1; }
+  8% { opacity: 0.3; }
+  16% { opacity: 1; scale: 1 1; }
+  45% { scale: 1 0.06; opacity: 1; }
+  70% { scale: 0 0.06; opacity: 0.8; }
+  100% { scale: 0 0.06; opacity: 0; }
+}
+@keyframes jarvis-burst-flash {
+  0% { scale: 0.1; opacity: 0; }
+  12% { scale: 1; opacity: 1; }
+  100% { scale: 3; opacity: 0; }
+}
+@keyframes jarvis-burst-wave {
+  0% { scale: 0.05; opacity: 1; }
+  100% { scale: 1.6; opacity: 0; }
+}
+
+/* Hemlig ny replik: klick på J.A.R.V.I.S. ger ett kort omstartsflimmer */
+.theme-dark .claudian-welcome-greeting.jarvis-reboot {
+  animation: jarvis-reboot 0.45s steps(1, end) 1;
+}
+@keyframes jarvis-reboot {
+  0% { opacity: 0; }
+  15% { opacity: 0.8; }
+  30% { opacity: 0.15; }
+  45% { opacity: 1; filter: blur(1px); }
+  60% { opacity: 0.5; filter: none; }
+  75%, 100% { opacity: 1; }
+}
+
 /* ---------- 3. Meddelanden ---------- */
 /* Dina meddelanden: HUD-ram med hörn */
 .theme-dark .claudian-message-user > .claudian-message-content {
@@ -426,6 +614,12 @@
 .theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::after { animation: none; }
 .theme-dark.jarvis-no-motion .jarvis-just-completed::before,
 .theme-dark.jarvis-no-motion .jarvis-just-completed::after { display: none; }
+.theme-dark.jarvis-no-motion .claudian-welcome::before,
+.theme-dark.jarvis-no-motion .claudian-welcome::after,
+.theme-dark.jarvis-no-motion .claudian-welcome-greeting.jarvis-reboot { animation: none; }
+.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-welcome-exit { display: none; }
+.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging::before,
+.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .theme-dark .claudian-tab-badge-streaming,
   .theme-dark .claudian-session-running-indicator::before,
@@ -434,4 +628,10 @@
   .theme-dark .claudian-session-group-running-indicator::after { animation: none; }
   .theme-dark .jarvis-just-completed::before,
   .theme-dark .jarvis-just-completed::after { display: none; }
+  .theme-dark .claudian-welcome::before,
+  .theme-dark .claudian-welcome::after,
+  .theme-dark .claudian-welcome-greeting.jarvis-reboot { animation: none; }
+  .theme-dark .claudian-welcome.jarvis-welcome-exit { display: none; }
+  .theme-dark .claudian-welcome.jarvis-charging::before,
+  .theme-dark .claudian-welcome.jarvis-charging::after { animation: none; }
 }

@@ -34,7 +34,8 @@ Want the same look in your terminal? Try [Terminal Jarvis HUD](https://github.co
 A small companion plugin for Claudian. It does not modify Claudian.
 
 - **Completion effect:** when a Claudian session completes, HUD corner brackets lock onto the session row and a glowing check mark appears where the arc reactor spinner was. CSS alone cannot tell a session that just finished from one that is re-rendered later, so this part needs a few lines of JavaScript.
-- **Jarvis greetings:** the welcome screen says **J.A.R.V.I.S.** instead of Claudian, with one of 80+ dry Jarvis lines instead of "Hey there". Lines depend on the time of day, the day of the week and the calendar, from Halloween and Christmas to midsommar and kanelbullens dag.
+- **Jarvis greetings:** the welcome screen says **J.A.R.V.I.S.** instead of Claudian, with one of 80+ dry Jarvis lines instead of "Hey there". Lines depend on the time of day, the day of the week and the calendar, from Halloween and Christmas to midsommar and kanelbullens dag. There is also a hidden way to ask Jarvis for another one.
+- **Welcome reactor:** the arc reactor behind the welcome screen powers up and breathes while you type. When you send the first message it ignites: the inner arcs collapse into the core, the core flashes, a shockwave goes out, the ring blows outward and the text switches off like an old CRT screen. Visual only, no sound, and only transform and opacity are animated so it stays smooth. The reactor itself is in the snippet, the plugin adds the typing and send effects.
 
 1. Copy the files in `plugin/` into `.obsidian/plugins/jarvis-hud-fx/` in your vault.
 2. In Obsidian, go to **Settings → Community plugins**, refresh, and enable **Jarvis HUD FX**.
@@ -47,7 +48,7 @@ A small companion plugin for Claudian. It does not modify Claudian.
 | `snippets/jarvis-hud.css` | The main HUD styling |
 | `snippets/jarvis-callouts.css` | Custom callout types, e.g. `> [!calendar]` |
 | `snippets/jarvis-claudian.css` | Styling for the [Claudian](https://github.com/YishenTu/claudian) plugin (Claude Code in Obsidian). Requires `jarvis-hud.css` |
-| `plugin/` | Optional Jarvis HUD FX plugin, completion effect and Jarvis greetings for Claudian |
+| `plugin/` | Optional Jarvis HUD FX plugin, completion effect, Jarvis greetings and welcome reactor effects for Claudian |
 
 ## Supported plugins
 
