@@ -12,6 +12,11 @@
  *    and its greeting with a Jarvis line picked from the time of day, the day
  *    of the week and the calendar. Secret: clicking "J.A.R.V.I.S." gives a
  *    new line.
+ *
+ * 3. Reactor. Marks the welcome screen "jarvis-charging" while you type, so
+ *    the arc reactor behind it powers up. Claudian hides the welcome screen
+ *    at once when you send, so the plugin lays a copy over it that plays the
+ *    exit animation and then removes itself.
  */
 const { Plugin } = require("obsidian");
 
@@ -26,6 +31,16 @@ const BRAND = ".claudian-welcome-brand";
 const GREETING = ".claudian-welcome-greeting";
 const BRAND_TEXT = "J.A.R.V.I.S.";
 const REBOOT_CLASS = "jarvis-reboot";
+
+const WELCOME = ".claudian-welcome";
+const MESSAGES_WRAPPER = ".claudian-messages-wrapper";
+const COMPOSER = ".claudian-input-composer";
+const INPUT = ".claudian-input";
+const HIDDEN_CLASS = "claudian-hidden";
+const CHARGING_CLASS = "jarvis-charging";
+const EXIT_CLASS = "jarvis-welcome-exit";
+// Must cover the longest exit animation in jarvis-claudian.css.
+const EXIT_MS = 950;
 
 // ---------- Greetings ----------
 // {time} is replaced with the current time, e.g. 01:42.
@@ -245,18 +260,37 @@ function pickGreeting(now, last) {
   return pick(fresh.length > 0 ? fresh : lines).replace("{time}", time);
 }
 
+// Claudian's composer is a CodeMirror editor that shows a placeholder when empty.
+function hasText(input) {
+  const content = input.querySelector(".cm-content") ?? input;
+  if (content.querySelector(".cm-placeholder")) return false;
+  return content.textContent.trim().length > 0;
+}
+
 module.exports = class JarvisHudFx extends Plugin {
   onload() {
     this.running = new Map(); // conversation id -> was running at last scan
     this.completedAt = new Map(); // conversation id -> time it finished
     this.scheduled = false;
     this.lastGreeting = null;
+    this.welcomes = new WeakMap(); // welcome element -> time it was last shown
+
+    this.welcomeObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        const el = m.target;
+        const wasHidden = (m.oldValue ?? "").split(" ").includes(HIDDEN_CLASS);
+        const isHidden = el.classList.contains(HIDDEN_CLASS);
+        if (wasHidden && !isHidden) this.welcomes.set(el, performance.now());
+        if (!wasHidden && isHidden) this.launch(el);
+      }
+    });
 
     this.observer = new MutationObserver((mutations) => {
       if (!mutations.some((m) => m.target.closest?.(CLAUDIAN))) return;
       // Swap the welcome text right away, before the next paint, so
       // Claudian's own greeting never flashes on screen.
       this.greet();
+      this.watchWelcomes();
       this.schedule();
     });
     this.observer.observe(document.body, {
@@ -270,14 +304,23 @@ module.exports = class JarvisHudFx extends Plugin {
       const greeting = brand?.parentElement?.querySelector(GREETING);
       if (greeting) this.setGreeting(greeting, true);
     });
+    this.registerDomEvent(document, "input", (event) => {
+      const input = event.target.closest?.(INPUT);
+      const welcome = input?.closest(COMPOSER)?.parentElement?.querySelector(WELCOME);
+      welcome?.classList.toggle(CHARGING_CLASS, hasText(input));
+    });
     this.app.workspace.onLayoutReady(() => {
       this.greet();
+      this.watchWelcomes();
       this.scan();
     });
   }
 
   onunload() {
     this.observer?.disconnect();
+    this.welcomeObserver?.disconnect();
+    document.querySelectorAll(`.${EXIT_CLASS}`).forEach((el) => el.remove());
+    document.querySelectorAll(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
     document.querySelectorAll(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
   }
 
@@ -313,6 +356,33 @@ module.exports = class JarvisHudFx extends Plugin {
     el.classList.remove(REBOOT_CLASS);
     void el.offsetWidth;
     el.classList.add(REBOOT_CLASS);
+  }
+
+  // Notes when each welcome screen appeared, so the exit copy can continue
+  // the reactor's rotation instead of jumping back to the start.
+  watchWelcomes() {
+    for (const el of document.querySelectorAll(WELCOME)) {
+      if (this.welcomes.has(el) || el.classList.contains(EXIT_CLASS)) continue;
+      this.welcomes.set(el, performance.now());
+      this.welcomeObserver.observe(el, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+    }
+  }
+
+  // Plays the exit only when the welcome screen goes away while you were
+  // typing, so opening an existing chat does not fire the reactor.
+  launch(welcome) {
+    if (!welcome.classList.contains(CHARGING_CLASS)) return;
+    welcome.classList.remove(CHARGING_CLASS);
+    const wrapper = welcome.closest(MESSAGES_WRAPPER);
+    if (!wrapper) return;
+    const ghost = welcome.cloneNode(true);
+    ghost.classList.remove(HIDDEN_CLASS);
+    ghost.classList.add(EXIT_CLASS);
+    ghost.setAttribute("aria-hidden", "true");
+    const shown = this.welcomes.get(welcome) ?? performance.now();
+    ghost.style.setProperty("--jarvis-fx-offset", `-${Math.round(performance.now() - shown)}ms`);
+    wrapper.appendChild(ghost);
+    window.setTimeout(() => ghost.remove(), EXIT_MS);
   }
 
   scan() {
