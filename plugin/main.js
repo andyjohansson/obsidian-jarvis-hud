@@ -34,7 +34,8 @@ const REBOOT_CLASS = "jarvis-reboot";
 
 const WELCOME = ".claudian-welcome";
 const MESSAGES_WRAPPER = ".claudian-messages-wrapper";
-const COMPOSER = ".claudian-input-composer";
+const CONTAINER = ".claudian-container";
+const ACTIVE_WELCOME = ".claudian-tab-content:not(.claudian-hidden) .claudian-welcome";
 const INPUT = ".claudian-input";
 const HIDDEN_CLASS = "claudian-hidden";
 const CHARGING_CLASS = "jarvis-charging";
@@ -306,7 +307,9 @@ module.exports = class JarvisHudFx extends Plugin {
     });
     this.registerDomEvent(document, "input", (event) => {
       const input = event.target.closest?.(INPUT);
-      const welcome = input?.closest(COMPOSER)?.parentElement?.querySelector(WELCOME);
+      // Claudian moves the active tab's input box into a shared slot, so
+      // find the welcome screen through the visible tab instead.
+      const welcome = input?.closest(CONTAINER)?.querySelector(ACTIVE_WELCOME);
       welcome?.classList.toggle(CHARGING_CLASS, hasText(input));
     });
     this.app.workspace.onLayoutReady(() => {
