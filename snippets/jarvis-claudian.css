@@ -41,13 +41,15 @@
   text-wrap: balance;
 }
 
-/* Arc reactor i bakgrunden: segmenterad spolring som roterar mycket långsamt,
-   tunna ringar och en mjuk kärnglöd bakom texten */
+/* Arc reactor i bakgrunden: laddikonen i stort format och nedtonad. Samma
+   segmentring med ljussvans, samma motroterande bågar och glödande kärna,
+   bara lugnare. */
 .theme-dark .claudian-welcome {
+  --jarvis-reactor-size: min(440px, 85%);
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 216, 255, 0.09), rgba(0, 216, 255, 0.03) 110px, transparent 240px);
+  background: radial-gradient(circle at 50% 50%, rgba(230, 251, 255, 0.07), rgba(0, 216, 255, 0.05) 40px, rgba(0, 216, 255, 0.015) 120px, transparent 200px);
 }
 .theme-dark .claudian-welcome::before,
 .theme-dark .claudian-welcome::after {
@@ -56,32 +58,32 @@
   top: 50%;
   left: 50%;
   z-index: -1;
-  width: min(520px, 90%);
   aspect-ratio: 1;
   translate: -50% -50%;
   border-radius: 50%;
   pointer-events: none;
 }
-/* Spolringen: tio segment, som på reaktorn i spinnern */
+/* Yttre ring: åtta segment med svans som sveper medurs */
 .theme-dark .claudian-welcome::before {
-  background: repeating-conic-gradient(rgba(0, 216, 255, 0.09) 0 27deg, transparent 27deg 36deg);
-  -webkit-mask: radial-gradient(closest-side, transparent 71%, #000 71.5% 89%, transparent 89.5%);
-  mask: radial-gradient(closest-side, transparent 71%, #000 71.5% 89%, transparent 89.5%);
-  filter: drop-shadow(0 0 6px rgba(0, 216, 255, 0.25));
-  animation: jarvis-reactor-drift 120s linear infinite;
+  width: var(--jarvis-reactor-size);
+  background: conic-gradient(rgba(0, 216, 255, 0.01), rgba(0, 216, 255, 0.2));
+  -webkit-mask:
+    radial-gradient(closest-side, transparent 88%, #000 88.5% 99%, transparent 99.5%),
+    repeating-conic-gradient(#000 0 34deg, transparent 34deg 45deg);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  filter: drop-shadow(0 0 8px rgba(0, 216, 255, 0.3));
+  animation: jarvis-reactor-spin 24s linear infinite;
 }
-/* Tunna ringar innanför och utanför spolringen */
+/* Inre bågar som snurrar moturs */
 .theme-dark .claudian-welcome::after {
-  background: radial-gradient(closest-side,
-    transparent 37%, rgba(0, 216, 255, 0.1) 37.5% 38%,
-    transparent 38.5% 61%, rgba(0, 216, 255, 0.08) 61.5% 62%,
-    transparent 62.5% 67%, rgba(0, 216, 255, 0.14) 67.5% 68.3%,
-    transparent 68.8% 93%, rgba(0, 216, 255, 0.13) 93.5% 94.2%,
-    transparent 94.7% 98.5%, rgba(0, 216, 255, 0.05) 99% 99.6%,
-    transparent 100%);
-}
-@keyframes jarvis-reactor-drift {
-  to { rotate: 360deg; }
+  width: calc(var(--jarvis-reactor-size) * 0.56);
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-top-color: rgba(125, 238, 255, 0.16);
+  border-bottom-color: rgba(125, 238, 255, 0.16);
+  filter: drop-shadow(0 0 6px rgba(0, 216, 255, 0.3));
+  animation: jarvis-reactor-spin 16s linear infinite reverse;
 }
 
 /* Hemlig ny replik: klick på J.A.R.V.I.S. ger ett kort omstartsflimmer */
@@ -483,6 +485,7 @@
 .theme-dark.jarvis-no-motion .jarvis-just-completed::before,
 .theme-dark.jarvis-no-motion .jarvis-just-completed::after { display: none; }
 .theme-dark.jarvis-no-motion .claudian-welcome::before,
+.theme-dark.jarvis-no-motion .claudian-welcome::after,
 .theme-dark.jarvis-no-motion .claudian-welcome-greeting.jarvis-reboot { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .theme-dark .claudian-tab-badge-streaming,
@@ -493,5 +496,6 @@
   .theme-dark .jarvis-just-completed::before,
   .theme-dark .jarvis-just-completed::after { display: none; }
   .theme-dark .claudian-welcome::before,
+  .theme-dark .claudian-welcome::after,
   .theme-dark .claudian-welcome-greeting.jarvis-reboot { animation: none; }
 }
