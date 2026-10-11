@@ -188,8 +188,86 @@
   box-shadow: 0 -6px 20px rgba(0, 216, 255, 0.06);
 }
 
-/* ---------- 11. Av-knappar och tillgänglighet ---------- */
-.theme-dark.jarvis-no-motion .claudian-tab-badge-streaming { animation: none; }
+/* ---------- 11. Spinner: arc reactor ---------- */
+/* Ersätter Claudians roterande SVG med en segmenterad ring och en pulserande kärna */
+.theme-dark .claudian-session-running-indicator,
+.theme-dark .claudian-session-group-running-indicator {
+  position: relative;
+  flex-basis: 16px;
+  width: 16px;
+  height: 16px;
+}
+.theme-dark .claudian-session-running-indicator svg,
+.theme-dark .claudian-session-group-running-indicator svg {
+  display: none;
+}
+/* Yttre ring: segment med svans som sveper medurs */
+.theme-dark .claudian-session-running-indicator::before,
+.theme-dark .claudian-session-group-running-indicator::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(0, 216, 255, 0.08), var(--j-cyan));
+  -webkit-mask:
+    radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)),
+    repeating-conic-gradient(#000 0 34deg, transparent 34deg 45deg);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  animation:
+    jarvis-reactor-spin 3s linear infinite,
+    jarvis-reactor-pulse 2s ease-in-out infinite;
+}
+/* Inre båge som snurrar moturs runt en glödande kärna */
+.theme-dark .claudian-session-running-indicator::after,
+.theme-dark .claudian-session-group-running-indicator::after {
+  content: "";
+  position: absolute;
+  inset: 3.5px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-top-color: #7deeff;
+  border-bottom-color: #7deeff;
+  background: radial-gradient(circle, #e6fbff 0 1.2px, var(--j-cyan) 1.8px, transparent 2.8px);
+  animation:
+    jarvis-reactor-spin 2.2s linear infinite reverse,
+    jarvis-reactor-core 2s ease-in-out infinite;
+}
+@keyframes jarvis-reactor-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes jarvis-reactor-pulse {
+  0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 1px rgba(0, 216, 255, 0.5)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 3px #00d8ff) drop-shadow(0 0 7px rgba(0, 216, 255, 0.8)); }
+}
+@keyframes jarvis-reactor-core {
+  0%, 100% { opacity: 0.75; filter: drop-shadow(0 0 1px rgba(0, 216, 255, 0.6)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 3px #e6fbff) drop-shadow(0 0 8px #00d8ff); }
+}
+
+/* Övriga laddsnurror: cyan med glöd */
+.theme-dark .claudian-inline-spinner,
+.theme-dark .claudian-tab-hydration-loading::before {
+  border-color: rgba(0, 216, 255, 0.15);
+  border-top-color: var(--j-cyan);
+  box-shadow: 0 0 6px rgba(0, 216, 255, 0.35);
+}
+.theme-dark .claudian-history-item.running .claudian-history-item-icon svg,
+.theme-dark .claudian-action-loading {
+  color: var(--j-cyan);
+  filter: drop-shadow(0 0 3px rgba(0, 216, 255, 0.7));
+}
+
+/* ---------- 12. Av-knappar och tillgänglighet ---------- */
+.theme-dark.jarvis-no-motion .claudian-tab-badge-streaming,
+.theme-dark.jarvis-no-motion .claudian-session-running-indicator::before,
+.theme-dark.jarvis-no-motion .claudian-session-running-indicator::after,
+.theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::before,
+.theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  .theme-dark .claudian-tab-badge-streaming { animation: none; }
+  .theme-dark .claudian-tab-badge-streaming,
+  .theme-dark .claudian-session-running-indicator::before,
+  .theme-dark .claudian-session-running-indicator::after,
+  .theme-dark .claudian-session-group-running-indicator::before,
+  .theme-dark .claudian-session-group-running-indicator::after { animation: none; }
 }
