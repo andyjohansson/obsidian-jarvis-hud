@@ -9,11 +9,11 @@
 const { Plugin } = require("obsidian");
 
 const CLAUDIAN = '[class^="claudian-"], [class*=" claudian-"]';
-const ROW =".claudian-history-item[data-conversation-id]";
+const ROW = ".claudian-history-item[data-conversation-id]";
 const DONE_CLASS = "jarvis-just-completed";
 const ERROR_INDICATOR = ".claudian-session-status-indicator--error";
-// Must match the longest completion animation in jarvis-claudian.css.
-const EFFECT_MS = 1100;
+// Must cover the longest completion animation in jarvis-claudian.css.
+const EFFECT_MS = 1500;
 
 module.exports = class JarvisHudFx extends Plugin {
   onload() {

@@ -245,43 +245,57 @@
   50% { opacity: 1; filter: drop-shadow(0 0 3px #e6fbff) drop-shadow(0 0 8px #00d8ff); }
 }
 
-/* Klar: skanningslinje över raden och en chockvåg där reaktorn satt.
+/* Klar: HUD-hörn låser fast runt raden, sedan tänds en bock där reaktorn satt.
    Kräver pluginet Jarvis HUD FX (plugin/), som sätter klassen bara när en
    session precis blivit klar. Utan pluginet händer ingenting. */
 .theme-dark .claudian-history-item.jarvis-just-completed {
   position: relative;
-  overflow: hidden;
 }
 .theme-dark .claudian-history-item.jarvis-just-completed::before {
+  --j-c: var(--j-cyan);
   content: "";
   position: absolute;
   inset: 0;
+  border-radius: 2px;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(0, 216, 255, 0.1) 35%, rgba(0, 216, 255, 0.3) 47%, rgba(230, 251, 255, 0.6) 50%, transparent 53%);
-  background-size: 250% 100%;
-  animation: jarvis-done-scan 1s ease-out var(--jarvis-fx-offset, 0ms) 1 both;
+  background:
+    linear-gradient(var(--j-c), var(--j-c)) top left / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top left / 2px 8px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top right / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top right / 2px 8px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom left / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom left / 2px 8px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 2px 8px no-repeat;
+  filter: drop-shadow(0 0 3px rgba(0, 216, 255, 0.8));
+  animation: jarvis-done-lock 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) var(--jarvis-fx-offset, 0ms) 1 both;
 }
 .theme-dark .claudian-history-item.jarvis-just-completed::after {
   content: "";
   position: absolute;
   top: 50%;
-  inset-inline-end: 12px;
-  width: 16px;
-  height: 16px;
-  margin-top: -8px;
-  border-radius: 50%;
-  border: 2px solid var(--j-cyan);
+  inset-inline-end: 17px;
+  width: 5px;
+  height: 10px;
+  margin-top: -7px;
+  border: solid #e6fbff;
+  border-width: 0 2px 2px 0;
   pointer-events: none;
-  animation: jarvis-done-ring 0.9s ease-out var(--jarvis-fx-offset, 0ms) 1 both;
+  animation: jarvis-done-check 1.4s ease-out var(--jarvis-fx-offset, 0ms) 1 both;
 }
-@keyframes jarvis-done-scan {
-  from { background-position: 100% 0; opacity: 1; }
-  80% { opacity: 1; }
-  to { background-position: -50% 0; opacity: 0; }
+@keyframes jarvis-done-lock {
+  0% { inset: -5px -14px; opacity: 0; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0); }
+  25% { inset: 0; opacity: 1; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0.16), 0 0 14px rgba(0, 216, 255, 0.35); }
+  45% { inset: 0; opacity: 1; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0.05), 0 0 6px rgba(0, 216, 255, 0.15); }
+  75% { inset: 0; opacity: 1; }
+  100% { inset: 0; opacity: 0; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0); }
 }
-@keyframes jarvis-done-ring {
-  0% { transform: scale(0.4); opacity: 1; box-shadow: 0 0 10px #00d8ff, inset 0 0 6px #e6fbff; }
-  100% { transform: scale(2.6); opacity: 0; box-shadow: 0 0 2px rgba(0, 216, 255, 0); }
+@keyframes jarvis-done-check {
+  0%, 20% { transform: rotate(45deg) scale(0); opacity: 0; }
+  35% { transform: rotate(45deg) scale(1.5); opacity: 1; filter: drop-shadow(0 0 4px #00d8ff) drop-shadow(0 0 8px #00d8ff); }
+  50% { transform: rotate(45deg) scale(1); filter: drop-shadow(0 0 3px #00d8ff); }
+  80% { transform: rotate(45deg) scale(1); opacity: 1; }
+  100% { transform: rotate(45deg) scale(1); opacity: 0; }
 }
 
 /* Övriga laddsnurror: cyan med glöd */

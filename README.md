@@ -31,7 +31,7 @@ Want the same look in your terminal? Try [Terminal Jarvis HUD](https://github.co
 
 ### Optional: Jarvis HUD FX plugin
 
-A tiny companion plugin that adds a one-shot "finishing touch" when a Claudian session completes: a scan line sweeps across the session row and a shockwave ring fades out where the arc reactor spinner was. CSS alone cannot tell a session that just finished from one that is re-rendered later, so this part needs a few lines of JavaScript. It does not modify Claudian.
+A tiny companion plugin that adds a one-shot "finishing touch" when a Claudian session completes: HUD corner brackets lock onto the session row and a glowing check mark appears where the arc reactor spinner was. CSS alone cannot tell a session that just finished from one that is re-rendered later, so this part needs a few lines of JavaScript. It does not modify Claudian.
 
 1. Copy the files in `plugin/` into `.obsidian/plugins/jarvis-hud-fx/` in your vault.
 2. In Obsidian, go to **Settings → Community plugins**, refresh, and enable **Jarvis HUD FX**.
