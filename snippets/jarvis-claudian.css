@@ -316,6 +316,24 @@
   height: 16px;
 }
 
+/* Hela raden är klickbar: Claudian lyssnar bara på textytan, så den får en
+   osynlig yta som täcker raden. Ytan ligger i textytan, så klicket hanteras
+   precis som förut. Knapparna ligger ovanpå och statusikonerna släpper
+   igenom klick. */
+.theme-dark .claudian-session-sidebar .claudian-history-item-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.theme-dark .claudian-session-sidebar .claudian-history-item-actions {
+  position: relative;
+  z-index: 1;
+}
+.theme-dark .claudian-session-sidebar .claudian-history-item .claudian-session-running-indicator,
+.theme-dark .claudian-session-sidebar .claudian-history-item .claudian-session-status-indicator {
+  pointer-events: none;
+}
+
 /* Klar men osedd: liten, stilla cyan punkt i statuskolumnen.
    Claudian sätter --attention på raden tills sessionen öppnats.
    Punkten väntar tills klar-effekten ovan är färdig. */
