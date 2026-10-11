@@ -26,6 +26,20 @@
   color: var(--j-cyan);
   text-shadow: var(--j-glow);
 }
+/* Jarvis-repliker från pluginet Jarvis HUD FX är hela meningar: mindre,
+   vanlig skiftläge och radbrytning i stället för versaler */
+.theme-dark .claudian-welcome-greeting[data-jarvis-greeting] {
+  max-width: 34em;
+  margin-inline: auto;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0.03em;
+  color: #bfefff;
+  text-shadow: 0 0 8px rgba(0, 216, 255, 0.35);
+  text-wrap: balance;
+}
 
 /* ---------- 3. Meddelanden ---------- */
 /* Dina meddelanden: HUD-ram med hörn */

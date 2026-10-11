@@ -1,9 +1,9 @@
 {
   "id": "jarvis-hud-fx",
   "name": "Jarvis HUD FX",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "minAppVersion": "1.5.0",
-  "description": "Companion to the Jarvis HUD snippets. Marks Claudian sessions that just finished so jarvis-claudian.css can play a one-shot completion effect.",
+  "description": "Companion to the Jarvis HUD snippets. Adds a one-shot completion effect to Claudian sessions and replaces Claudian's welcome greeting with Jarvis lines.",
   "author": "Andy Johansson",
   "isDesktopOnly": true
 }

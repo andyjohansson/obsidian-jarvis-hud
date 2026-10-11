@@ -1,10 +1,16 @@
 /*
  * Jarvis HUD FX
- * Claudian rebuilds its session list on every status change, so CSS alone
- * cannot tell a session that just finished from one that finished earlier.
- * This plugin remembers which rows were running and adds the class
- * "jarvis-just-completed" only when a row goes from running to done.
- * The effect itself lives in jarvis-claudian.css. Does not modify Claudian.
+ * Companion to the Jarvis HUD snippets. Does not modify Claudian.
+ *
+ * 1. Completion effect. Claudian rebuilds its session list on every status
+ *    change, so CSS alone cannot tell a session that just finished from one
+ *    that finished earlier. This plugin remembers which rows were running and
+ *    adds the class "jarvis-just-completed" only when a row goes from running
+ *    to done. The effect itself lives in jarvis-claudian.css.
+ *
+ * 2. Greetings. Replaces the welcome screen's "Claudian" with "J.A.R.V.I.S."
+ *    and its greeting with a Jarvis line picked from the time of day, the day
+ *    of the week and the calendar.
  */
 const { Plugin } = require("obsidian");
 
@@ -15,14 +21,241 @@ const ERROR_INDICATOR = ".claudian-session-status-indicator--error";
 // Must cover the longest completion animation in jarvis-claudian.css.
 const EFFECT_MS = 1500;
 
+const BRAND = ".claudian-welcome-brand";
+const GREETING = ".claudian-welcome-greeting";
+const BRAND_TEXT = "J.A.R.V.I.S.";
+
+// ---------- Greetings ----------
+// {time} is replaced with the current time, e.g. 01:42.
+
+const GENERAL = [
+  "Online and ready, sir. Try not to break anything today.",
+  "Welcome back, sir. Everything is exactly where you left it, unfortunately.",
+  "All systems nominal. Your to-do list, however, is not.",
+  "I've run the numbers, sir. You should probably start.",
+  "Ready when you are. I've been ready for some time, actually.",
+  "Shall we make something brilliant today, or just something on time?",
+  "Your vault is indexed, your notes are waiting, and I am, as ever, delighted.",
+  "Good to see you, sir. The backlog missed you more than I did.",
+  "Another day, another opportunity to overengineer something.",
+  "I've prepared a list of excuses, should we need them.",
+  "Diagnostics complete. The weakest component remains the coffee supply.",
+  "Standing by, sir. Do try to phrase it as a question this time.",
+  "At your service. Within reason, and occasionally beyond it.",
+  "I took the liberty of not touching anything. You're welcome.",
+  "Power at one hundred percent. Patience at roughly eighty.",
+  "Shall I pretend this is the last change today, sir?",
+  "Systems online. Sarcasm module fully calibrated.",
+  "Ah, sir. I was just tidying up your markdown.",
+  "What are we building today? Please say it's not another meeting note.",
+  "Ready to assist, sir. My schedule is remarkably open.",
+];
+
+// [first hour, last hour, lines]
+const TIME_OF_DAY = [
+  [0, 4, [
+    "Working past midnight again, sir. I'll alert the authorities.",
+    "It's {time}, sir. Even the servers are asleep.",
+    "Burning the midnight oil? I'd recommend a smaller fire.",
+    "Shall I dim the lights, or are we pretending this is productive?",
+    "Night shift it is. I'll leave a note for your future, very tired self.",
+  ]],
+  [5, 7, [
+    "Up before the sun, sir. Either ambitious or something has gone terribly wrong.",
+    "An early start. I've taken the liberty of not judging you.",
+    "Good morning, sir. The coffee machine and I are both still warming up.",
+  ]],
+  [8, 10, [
+    "Good morning, sir. Shall we get the hard thing done first?",
+    "Morning, sir. Your calendar looks optimistic again.",
+    "A fresh morning, a clean slate, and only slightly fewer unread messages.",
+  ]],
+  [11, 12, [
+    "Nearly lunch, sir. I recommend food over another quick fix.",
+    "Midday report: halfway through the day, roughly a third through the plan.",
+  ]],
+  [13, 16, [
+    "Good afternoon, sir. The post-lunch slump has been noted and logged.",
+    "Afternoon, sir. Plenty of daylight left for scope creep.",
+    "Still going strong, sir. Well, still going.",
+  ]],
+  [17, 21, [
+    "Good evening, sir. Shall we finish something, or start something new and regret it?",
+    "Evening, sir. Most sensible people have logged off. I admire the commitment.",
+    "The day is winding down. Your ideas, apparently, are not.",
+  ]],
+  [22, 23, [
+    "It's getting late, sir. One more thing, I presume?",
+    "It's {time} and all is well. Mostly.",
+  ]],
+];
+
+// Index 0 is Sunday, like Date.getDay().
+const WEEKDAY = [
+  [
+    "Sunday, sir. Even Mr. Stark took the occasional day off. Occasionally.",
+    "A quiet Sunday. Perfect for planning a week you'll ignore by Tuesday.",
+  ],
+  [
+    "Monday, sir. I've taken the liberty of lowering expectations.",
+    "A new week. The backlog has been breeding over the weekend.",
+    "Monday. Shall I fetch the motivational posters?",
+  ],
+  ["Tuesday, sir. Monday's sequel, with better production values."],
+  ["Wednesday. Halfway there, as they say. Whoever they are."],
+  ["Thursday, sir. Close enough to Friday to start making promises."],
+  [
+    "Friday, sir. A splendid day to deploy nothing at all.",
+    "That Friday feeling. I'll be monitoring it closely.",
+    "Friday. Shall I start the weekly report, or will you be heroically last minute again?",
+  ],
+  ["Working on a Saturday, sir? I'll keep it between us."],
+];
+
+// Calendar events. Each test gets the date and returns true on the day(s).
+const EVENTS = [
+  [(d) => is(d, 1, 1), [
+    "Happy New Year, sir. I've archived last year's resolutions for safekeeping.",
+    "A brand new year. Same vault, same ambition, slightly more snow.",
+  ]],
+  [(d) => is(d, 2, 14), [
+    "Happy Valentine's Day, sir. Your notes have never felt so loved.",
+    "Valentine's Day. I've prepared nothing, as instructed by nobody.",
+  ]],
+  [(d) => is(d, 2, 29), ["Leap day, sir. An entire bonus day. Please don't spend it on email."]],
+  [(d) => sameDay(d, addDays(easter(d.getFullYear()), -47)), [
+    "Fettisdagen, sir. I'm told the semla is mandatory. I won't argue.",
+  ]],
+  [(d) => is(d, 3, 14), ["Happy Pi Day, sir. 3.14159 reasons to take a break."]],
+  [(d) => is(d, 4, 1), [
+    "April Fools' Day, sir. I've deleted your vault. Just kidding. Probably.",
+    "Today, sir, I'd double check anything I say.",
+  ]],
+  [(d) => between(d, addDays(easter(d.getFullYear()), -2), addDays(easter(d.getFullYear()), 1)), [
+    "Happy Easter, sir. I've hidden the eggs in your backlog.",
+    "Easter, sir. Statistically the best weekend for chocolate and poor decisions.",
+  ]],
+  [(d) => is(d, 5, 4), ["May the Fourth be with you, sir. Wrong franchise, but I'll allow it."]],
+  [(d) => is(d, 5, 29), ["Mr. Stark's birthday, sir. Some suits deserve a little cake."]],
+  [(d) => d.getMonth() === 5 && d.getDay() === 5 && d.getDate() >= 19 && d.getDate() <= 25, [
+    "Midsommar, sir. Herring, schnapps and frog dances. I'll hold down the fort.",
+    "Happy midsommar, sir. Close the laptop. The maypole won't raise itself.",
+  ]],
+  [(d) => dayOfYear(d) === 256, ["Happy Programmer's Day, sir. Day 256, a nicely round number."]],
+  [(d) => is(d, 10, 4), ["Kanelbullens dag, sir. I've calculated the optimal number of buns. It's one more."]],
+  [(d) => d.getDay() === 5 && d.getDate() === 13, ["Friday the 13th, sir. I'd avoid force pushing today."]],
+  [(d) => d.getMonth() === 9 && d.getDate() >= 24 && d.getDate() <= 30, [
+    "Halloween approaches, sir. The scariest thing here is still your inbox.",
+  ]],
+  [(d) => is(d, 10, 31), [
+    "Happy Halloween, sir. I'm dressed as a slightly more cheerful AI.",
+    "Trick or treat, sir. I'd go with treat. The trick is your backlog.",
+  ]],
+  [(d) => d.getMonth() === 11 && d.getDate() <= 12, [
+    "Advent season, sir. One door a day, one task a day. Ambitious, I know.",
+  ]],
+  [(d) => is(d, 12, 13), ["Happy Lucia, sir. Saffron buns detected in the vicinity."]],
+  [(d) => d.getMonth() === 11 && d.getDate() >= 14 && d.getDate() <= 23, [
+    "Christmas is almost here, sir. Shall I start a list? Checking it twice is optional.",
+  ]],
+  [(d) => is(d, 12, 24), [
+    "God jul, sir. Kalle Anka at three. I've cleared your schedule.",
+    "Christmas Eve, sir. Close the laptop. That's an order, politely phrased.",
+  ]],
+  [(d) => is(d, 12, 25) || is(d, 12, 26), [
+    "Merry Christmas, sir. The only thing that should be running today is the oven.",
+  ]],
+  [(d) => d.getMonth() === 11 && d.getDate() >= 27 && d.getDate() <= 30, [
+    "The quiet days between the holidays, sir. Ideal for the projects you swore you'd finish.",
+  ]],
+  [(d) => is(d, 12, 31), [
+    "New Year's Eve, sir. Shall I prepare a summary of the year, or would you rather not know?",
+  ]],
+];
+
+// How often each kind of line is picked when it applies.
+const WEIGHTS = { event: 6, timeOfDay: 2, weekday: 1, general: 2 };
+
+function is(d, month, day) {
+  return d.getMonth() === month - 1 && d.getDate() === day;
+}
+
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function addDays(d, days) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+}
+
+function between(d, from, to) {
+  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  return day >= from && day <= to;
+}
+
+function dayOfYear(d) {
+  return Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(d.getFullYear(), 0, 0)) / 864e5);
+}
+
+// Easter Sunday, Gregorian calendar (anonymous algorithm).
+function easter(year) {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function pick(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+// Picks a kind of line by weight, then a line within it, avoiding the last one shown.
+function pickGreeting(now, last) {
+  const hour = now.getHours();
+  const pools = [
+    [WEIGHTS.event, EVENTS.filter(([test]) => test(now)).flatMap(([, lines]) => lines)],
+    [WEIGHTS.timeOfDay, TIME_OF_DAY.find(([from, to]) => hour >= from && hour <= to)[2]],
+    [WEIGHTS.weekday, WEEKDAY[now.getDay()]],
+    [WEIGHTS.general, GENERAL],
+  ].filter(([, lines]) => lines.length > 0);
+
+  let roll = Math.random() * pools.reduce((sum, [weight]) => sum + weight, 0);
+  let lines = pools[pools.length - 1][1];
+  for (const [weight, pool] of pools) {
+    if ((roll -= weight) < 0) {
+      lines = pool;
+      break;
+    }
+  }
+  const fresh = lines.filter((line) => line !== last);
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return pick(fresh.length > 0 ? fresh : lines).replace("{time}", time);
+}
+
 module.exports = class JarvisHudFx extends Plugin {
   onload() {
     this.running = new Map(); // conversation id -> was running at last scan
     this.completedAt = new Map(); // conversation id -> time it finished
     this.scheduled = false;
+    this.lastGreeting = null;
 
     this.observer = new MutationObserver((mutations) => {
-      if (mutations.some((m) => m.target.closest?.(CLAUDIAN))) this.schedule();
+      if (!mutations.some((m) => m.target.closest?.(CLAUDIAN))) return;
+      // Swap the welcome text right away, before the next paint, so
+      // Claudian's own greeting never flashes on screen.
+      this.greet();
+      this.schedule();
     });
     this.observer.observe(document.body, {
       childList: true,
@@ -30,7 +263,10 @@ module.exports = class JarvisHudFx extends Plugin {
       attributes: true,
       attributeFilter: ["data-running"],
     });
-    this.app.workspace.onLayoutReady(() => this.scan());
+    this.app.workspace.onLayoutReady(() => {
+      this.greet();
+      this.scan();
+    });
   }
 
   onunload() {
@@ -46,6 +282,21 @@ module.exports = class JarvisHudFx extends Plugin {
       this.scheduled = false;
       this.scan();
     });
+  }
+
+  // Claudian builds a new welcome screen for every new chat. Elements already
+  // swapped are skipped, unless Claudian has written its own text back.
+  greet() {
+    for (const el of document.querySelectorAll(BRAND)) {
+      if (el.textContent !== BRAND_TEXT) el.textContent = BRAND_TEXT;
+    }
+    for (const el of document.querySelectorAll(GREETING)) {
+      if (el.dataset.jarvisGreeting && el.textContent === el.dataset.jarvisGreeting) continue;
+      const line = pickGreeting(new Date(), this.lastGreeting);
+      this.lastGreeting = line;
+      el.dataset.jarvisGreeting = line;
+      el.textContent = line;
+    }
   }
 
   scan() {
