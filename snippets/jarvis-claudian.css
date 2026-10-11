@@ -41,6 +41,62 @@
   text-wrap: balance;
 }
 
+/* Arc reactor i bakgrunden: segmenterad spolring som roterar mycket långsamt,
+   tunna ringar och en mjuk kärnglöd bakom texten */
+.theme-dark .claudian-welcome {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 216, 255, 0.09), rgba(0, 216, 255, 0.03) 110px, transparent 240px);
+}
+.theme-dark .claudian-welcome::before,
+.theme-dark .claudian-welcome::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: min(520px, 90%);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* Spolringen: tio segment, som på reaktorn i spinnern */
+.theme-dark .claudian-welcome::before {
+  background: repeating-conic-gradient(rgba(0, 216, 255, 0.09) 0 27deg, transparent 27deg 36deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 71%, #000 71.5% 89%, transparent 89.5%);
+  mask: radial-gradient(closest-side, transparent 71%, #000 71.5% 89%, transparent 89.5%);
+  filter: drop-shadow(0 0 6px rgba(0, 216, 255, 0.25));
+  animation: jarvis-reactor-drift 120s linear infinite;
+}
+/* Tunna ringar innanför och utanför spolringen */
+.theme-dark .claudian-welcome::after {
+  background: radial-gradient(closest-side,
+    transparent 37%, rgba(0, 216, 255, 0.1) 37.5% 38%,
+    transparent 38.5% 61%, rgba(0, 216, 255, 0.08) 61.5% 62%,
+    transparent 62.5% 67%, rgba(0, 216, 255, 0.14) 67.5% 68.3%,
+    transparent 68.8% 93%, rgba(0, 216, 255, 0.13) 93.5% 94.2%,
+    transparent 94.7% 98.5%, rgba(0, 216, 255, 0.05) 99% 99.6%,
+    transparent 100%);
+}
+@keyframes jarvis-reactor-drift {
+  to { rotate: 360deg; }
+}
+
+/* Hemlig ny replik: klick på J.A.R.V.I.S. ger ett kort omstartsflimmer */
+.theme-dark .claudian-welcome-greeting.jarvis-reboot {
+  animation: jarvis-reboot 0.45s steps(1, end) 1;
+}
+@keyframes jarvis-reboot {
+  0% { opacity: 0; }
+  15% { opacity: 0.8; }
+  30% { opacity: 0.15; }
+  45% { opacity: 1; filter: blur(1px); }
+  60% { opacity: 0.5; filter: none; }
+  75%, 100% { opacity: 1; }
+}
+
 /* ---------- 3. Meddelanden ---------- */
 /* Dina meddelanden: HUD-ram med hörn */
 .theme-dark .claudian-message-user > .claudian-message-content {
@@ -426,6 +482,8 @@
 .theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::after { animation: none; }
 .theme-dark.jarvis-no-motion .jarvis-just-completed::before,
 .theme-dark.jarvis-no-motion .jarvis-just-completed::after { display: none; }
+.theme-dark.jarvis-no-motion .claudian-welcome::before,
+.theme-dark.jarvis-no-motion .claudian-welcome-greeting.jarvis-reboot { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .theme-dark .claudian-tab-badge-streaming,
   .theme-dark .claudian-session-running-indicator::before,
@@ -434,4 +492,6 @@
   .theme-dark .claudian-session-group-running-indicator::after { animation: none; }
   .theme-dark .jarvis-just-completed::before,
   .theme-dark .jarvis-just-completed::after { display: none; }
+  .theme-dark .claudian-welcome::before,
+  .theme-dark .claudian-welcome-greeting.jarvis-reboot { animation: none; }
 }

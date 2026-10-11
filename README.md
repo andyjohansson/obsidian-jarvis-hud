@@ -34,7 +34,7 @@ Want the same look in your terminal? Try [Terminal Jarvis HUD](https://github.co
 A small companion plugin for Claudian. It does not modify Claudian.
 
 - **Completion effect:** when a Claudian session completes, HUD corner brackets lock onto the session row and a glowing check mark appears where the arc reactor spinner was. CSS alone cannot tell a session that just finished from one that is re-rendered later, so this part needs a few lines of JavaScript.
-- **Jarvis greetings:** the welcome screen says **J.A.R.V.I.S.** instead of Claudian, with one of 80+ dry Jarvis lines instead of "Hey there". Lines depend on the time of day, the day of the week and the calendar, from Halloween and Christmas to midsommar and kanelbullens dag.
+- **Jarvis greetings:** the welcome screen says **J.A.R.V.I.S.** instead of Claudian, with one of 80+ dry Jarvis lines instead of "Hey there". Lines depend on the time of day, the day of the week and the calendar, from Halloween and Christmas to midsommar and kanelbullens dag. There is also a hidden way to ask Jarvis for another one.
 
 1. Copy the files in `plugin/` into `.obsidian/plugins/jarvis-hud-fx/` in your vault.
 2. In Obsidian, go to **Settings → Community plugins**, refresh, and enable **Jarvis HUD FX**.

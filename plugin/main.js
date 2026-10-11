@@ -10,7 +10,8 @@
  *
  * 2. Greetings. Replaces the welcome screen's "Claudian" with "J.A.R.V.I.S."
  *    and its greeting with a Jarvis line picked from the time of day, the day
- *    of the week and the calendar.
+ *    of the week and the calendar. Secret: clicking "J.A.R.V.I.S." gives a
+ *    new line.
  */
 const { Plugin } = require("obsidian");
 
@@ -24,6 +25,7 @@ const EFFECT_MS = 1500;
 const BRAND = ".claudian-welcome-brand";
 const GREETING = ".claudian-welcome-greeting";
 const BRAND_TEXT = "J.A.R.V.I.S.";
+const REBOOT_CLASS = "jarvis-reboot";
 
 // ---------- Greetings ----------
 // {time} is replaced with the current time, e.g. 01:42.
@@ -263,6 +265,11 @@ module.exports = class JarvisHudFx extends Plugin {
       attributes: true,
       attributeFilter: ["data-running"],
     });
+    this.registerDomEvent(document, "click", (event) => {
+      const brand = event.target.closest?.(BRAND);
+      const greeting = brand?.parentElement?.querySelector(GREETING);
+      if (greeting) this.setGreeting(greeting, true);
+    });
     this.app.workspace.onLayoutReady(() => {
       this.greet();
       this.scan();
@@ -292,11 +299,20 @@ module.exports = class JarvisHudFx extends Plugin {
     }
     for (const el of document.querySelectorAll(GREETING)) {
       if (el.dataset.jarvisGreeting && el.textContent === el.dataset.jarvisGreeting) continue;
-      const line = pickGreeting(new Date(), this.lastGreeting);
-      this.lastGreeting = line;
-      el.dataset.jarvisGreeting = line;
-      el.textContent = line;
+      this.setGreeting(el, false);
     }
+  }
+
+  setGreeting(el, reboot) {
+    const line = pickGreeting(new Date(), this.lastGreeting);
+    this.lastGreeting = line;
+    el.dataset.jarvisGreeting = line;
+    el.textContent = line;
+    if (!reboot) return;
+    // Restart the flicker even on rapid repeat clicks.
+    el.classList.remove(REBOOT_CLASS);
+    void el.offsetWidth;
+    el.classList.add(REBOOT_CLASS);
   }
 
   scan() {
