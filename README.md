@@ -59,6 +59,7 @@ A small companion plugin for Claudian. It does not modify Claudian.
 | [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | Adds a **Jarvis HUD** section with toggles, see below |
 | [Calendar](https://github.com/liamcain/obsidian-calendar-plugin) | Works with the HUD styling |
 | [Claudian](https://github.com/YishenTu/claudian) | Full HUD styling for the chat view via `jarvis-claudian.css` |
+| [Iconic](https://github.com/gfxholo/iconic) | Note titles with an icon keep the readable line width |
 
 Other plugins inherit the base colors and fonts from `jarvis-hud.css` but have no dedicated styling. Pull requests for more plugins are welcome.
 
