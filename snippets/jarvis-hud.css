@@ -150,6 +150,13 @@ body.theme-dark.minimal-dark-tonal {
   font-weight: 700;
   text-shadow: var(--j-glow);
 }
+/* Iconic lägger titeln i en egen wrapper, så Minimals läsbredd träffar den inte.
+   Syns i Live Preview, t.ex. i ett eget fönster. */
+.markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer > .iconic-title-wrapper {
+  max-width: var(--max-width);
+  width: var(--line-width);
+  margin-inline: var(--content-margin) !important;
+}
 .theme-dark .markdown-rendered h1,
 .theme-dark .HyperMD-header-1 {
   color: var(--j-cyan);
