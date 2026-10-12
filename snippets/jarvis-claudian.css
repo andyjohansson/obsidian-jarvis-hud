@@ -606,6 +606,63 @@
   filter: drop-shadow(0 0 3px rgba(0, 216, 255, 0.7));
 }
 
+/* Arkivering: raden "stänger sig själv". Samma HUD-hörn som när en session
+   blir klar låser fast runt raden, trycks ihop till en glödande linje medan
+   innehållet viks undan, och linjen krymper mot mitten medan raden fälls
+   ihop. Pluginet Jarvis HUD FX döljer den riktiga raden direkt och lägger en
+   kopia (.jarvis-archive-ghost) på dess plats som spelar effekten. */
+.theme-dark .claudian-history-item.jarvis-archived {
+  display: none;
+}
+.theme-dark .claudian-history-item.jarvis-archive-ghost {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+  interpolate-size: allow-keywords;
+  /* Fälls ihop under andra halvan, när linjen redan har bildats */
+  animation: jarvis-archive-collapse 0.375s ease-in-out calc(var(--jarvis-fx-offset, 0ms) + 0.375s) 1 both;
+}
+.theme-dark .claudian-history-item.jarvis-archive-ghost > * {
+  animation: jarvis-archive-fold 0.75s ease-in var(--jarvis-fx-offset, 0ms) 1 both;
+}
+.theme-dark .claudian-history-item.jarvis-archive-ghost::before {
+  --j-c: var(--j-cyan);
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 2px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--j-c), var(--j-c)) top left / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top left / 2px 8px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top right / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) top right / 2px 8px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom left / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom left / 2px 8px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 10px 2px no-repeat,
+    linear-gradient(var(--j-c), var(--j-c)) bottom right / 2px 8px no-repeat;
+  filter: drop-shadow(0 0 3px rgba(0, 216, 255, 0.8));
+  animation: jarvis-archive-lock 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) var(--jarvis-fx-offset, 0ms) 1 both;
+}
+/* Hörnen låser fast, trycks ihop till en linje, linjen krymper mot mitten */
+@keyframes jarvis-archive-lock {
+  0% { inset: -5px -14px; opacity: 0; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0); }
+  25% { inset: 0; opacity: 1; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0.16), 0 0 14px rgba(0, 216, 255, 0.35); }
+  50% { inset: calc(50% - 1px) 0; opacity: 1; box-shadow: inset 0 0 0 200px rgba(125, 238, 255, 0.9), 0 0 10px rgba(0, 216, 255, 0.8); }
+  100% { inset: calc(50% - 1px) 50%; opacity: 0; box-shadow: inset 0 0 0 200px rgba(125, 238, 255, 0.9), 0 0 6px rgba(0, 216, 255, 0.6); }
+}
+/* Innehållet viks ihop mot mittlinjen */
+@keyframes jarvis-archive-fold {
+  0%, 25% { opacity: 1; scale: 1 1; }
+  50%, 100% { opacity: 0; scale: 1 0.1; }
+}
+/* Raden fälls ihop så listan sluter sig mjukt */
+@keyframes jarvis-archive-collapse {
+  0% { height: auto; }
+  100% { height: 0; min-height: 0; padding-block: 0; margin-block: 0; border-width: 0; }
+}
+
 /* ---------- 12. Av-knappar och tillgänglighet ---------- */
 .theme-dark.jarvis-no-motion .claudian-tab-badge-streaming,
 .theme-dark.jarvis-no-motion .claudian-session-running-indicator::before,
@@ -618,6 +675,7 @@
 .theme-dark.jarvis-no-motion .claudian-welcome::after,
 .theme-dark.jarvis-no-motion .claudian-welcome-greeting.jarvis-reboot { animation: none; }
 .theme-dark.jarvis-no-motion .claudian-welcome.jarvis-welcome-exit { display: none; }
+.theme-dark.jarvis-no-motion .claudian-history-item.jarvis-archive-ghost { display: none; }
 .theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging::before,
 .theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
@@ -632,6 +690,7 @@
   .theme-dark .claudian-welcome::after,
   .theme-dark .claudian-welcome-greeting.jarvis-reboot { animation: none; }
   .theme-dark .claudian-welcome.jarvis-welcome-exit { display: none; }
+  .theme-dark .claudian-history-item.jarvis-archive-ghost { display: none; }
   .theme-dark .claudian-welcome.jarvis-charging::before,
   .theme-dark .claudian-welcome.jarvis-charging::after { animation: none; }
 }

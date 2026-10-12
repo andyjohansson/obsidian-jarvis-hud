@@ -18,6 +18,14 @@
  *    at once when you send, so the plugin lays a copy over it, adds the
  *    ignition layers (flash and shockwave) and removes it when the animation
  *    is done. Visual only.
+ *
+ * 4. Archive effect. On Archive the row hides at once and a copy takes its
+ *    place that "closes itself" (jarvis-claudian.css). Claudian rebuilds
+ *    the list right after, so the copy is put back where the row was on
+ *    every rebuild until the animation is done. The real row stays hidden
+ *    through re-renders until Claudian drops it. If Claudian has not dropped
+ *    it after ARCHIVE_TIMEOUT_MS, the row comes back, so a failed archive is
+ *    never hidden for good.
  */
 const { Plugin } = require("obsidian");
 
@@ -32,6 +40,14 @@ const BRAND = ".claudian-welcome-brand";
 const GREETING = ".claudian-welcome-greeting";
 const BRAND_TEXT = "J.A.R.V.I.S.";
 const REBOOT_CLASS = "jarvis-reboot";
+
+const ARCHIVE_BUTTON = ".claudian-archive-btn";
+const RESTORE_BUTTON = ".claudian-restore-btn";
+const ARCHIVED_CLASS = "jarvis-archived"; // the real row, hidden
+const ARCHIVE_GHOST_CLASS = "jarvis-archive-ghost"; // the copy that animates
+// Must cover the archive animation in jarvis-claudian.css.
+const ARCHIVE_OUT_MS = 800;
+const ARCHIVE_TIMEOUT_MS = 20000;
 
 const WELCOME = ".claudian-welcome";
 const MESSAGES_WRAPPER = ".claudian-messages-wrapper";
@@ -288,6 +304,8 @@ module.exports = class JarvisHudFx extends Plugin {
     this.scheduled = false;
     this.lastGreeting = null;
     this.welcomes = new WeakMap(); // welcome element -> time it was last shown
+    this.archiving = new Set(); // conversation ids clicked to archive, not yet gone
+    this.ghosts = new Map(); // conversation id -> { el, start, list, prevId, nextId }
 
     this.welcomeObserver = new MutationObserver((mutations) => {
       for (const m of mutations) {
@@ -305,6 +323,8 @@ module.exports = class JarvisHudFx extends Plugin {
       // Claudian's own greeting never flashes on screen.
       this.greet();
       this.watchWelcomes();
+      // Hide re-rendered rows before the next paint, so they never flash back.
+      this.hideArchiving();
       this.schedule();
     });
     this.observer.observe(document.body, {
@@ -318,6 +338,22 @@ module.exports = class JarvisHudFx extends Plugin {
       const greeting = brand?.parentElement?.querySelector(GREETING);
       if (greeting) this.setGreeting(greeting, true);
     });
+    // Capture phase, so it runs even if Claudian stops the click on the button.
+    this.registerDomEvent(
+      document,
+      "click",
+      (event) => {
+        const row = event.target.closest?.(ARCHIVE_BUTTON)?.closest(ROW);
+        // Claudian refuses to archive running sessions, so leave those alone.
+        if (!row || row.dataset.running === "true") return;
+        const id = row.dataset.conversationId;
+        this.archiving.add(id);
+        this.addGhost(row);
+        row.classList.add(ARCHIVED_CLASS);
+        window.setTimeout(() => this.releaseArchiving(id), ARCHIVE_TIMEOUT_MS);
+      },
+      { capture: true },
+    );
     this.registerDomEvent(document, "input", (event) => {
       const input = event.target.closest?.(INPUT);
       // Claudian moves the active tab's input box into a shared slot, so
@@ -336,6 +372,10 @@ module.exports = class JarvisHudFx extends Plugin {
     this.observer?.disconnect();
     this.welcomeObserver?.disconnect();
     document.querySelectorAll(`.${EXIT_CLASS}`).forEach((el) => el.remove());
+    document
+      .querySelectorAll(`.${ARCHIVED_CLASS}`)
+      .forEach((el) => el.classList.remove(ARCHIVED_CLASS));
+    document.querySelectorAll(`.${ARCHIVE_GHOST_CLASS}`).forEach((el) => el.remove());
     document.querySelectorAll(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
     document.querySelectorAll(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
   }
@@ -372,6 +412,75 @@ module.exports = class JarvisHudFx extends Plugin {
     el.classList.remove(REBOOT_CLASS);
     void el.offsetWidth;
     el.classList.add(REBOOT_CLASS);
+  }
+
+  // Rows for a session being archived, outside the archived list.
+  archivingRows(id) {
+    return [...document.querySelectorAll(ROW)].filter(
+      (row) => row.dataset.conversationId === id && !row.querySelector(RESTORE_BUTTON),
+    );
+  }
+
+  // Keeps rows hidden through Claudian's re-renders. Once Claudian has
+  // dropped the session from the list, the archive is done.
+  hideArchiving() {
+    for (const id of this.archiving) {
+      const rows = this.archivingRows(id);
+      if (rows.length === 0) this.archiving.delete(id);
+      for (const row of rows) row.classList.add(ARCHIVED_CLASS);
+    }
+    this.placeGhosts();
+  }
+
+  // A copy of the row, without state classes, that plays the animation.
+  addGhost(row) {
+    const el = row.cloneNode(true);
+    el.classList.remove(DONE_CLASS, "claudian-history-item--attention");
+    el.classList.add(ARCHIVE_GHOST_CLASS);
+    el.removeAttribute("data-conversation-id");
+    el.setAttribute("aria-hidden", "true");
+    const rowId = (r) => (r?.matches(ROW) ? r.dataset.conversationId : null);
+    const id = row.dataset.conversationId;
+    this.ghosts.set(id, {
+      el,
+      start: performance.now(),
+      list: row.parentElement.className,
+      prevId: rowId(row.previousElementSibling),
+      nextId: rowId(row.nextElementSibling),
+    });
+    row.after(el);
+    window.setTimeout(() => {
+      el.remove();
+      this.ghosts.delete(id);
+    }, ARCHIVE_OUT_MS);
+  }
+
+  // Claudian's rebuild throws the copy away, so put it back where the row
+  // was: next to the hidden row if it is still there, otherwise between its
+  // old neighbours. The animation continues where it was.
+  placeGhosts() {
+    for (const [id, ghost] of this.ghosts) {
+      if (ghost.el.isConnected) continue;
+      const find = (rowId) =>
+        rowId &&
+        [...document.querySelectorAll(ROW)].find(
+          (r) => r.dataset.conversationId === rowId && r.parentElement.className === ghost.list,
+        );
+      ghost.el.style.setProperty("--jarvis-fx-offset", `-${Math.round(performance.now() - ghost.start)}ms`);
+      const self = find(id);
+      const next = find(ghost.nextId);
+      const prev = find(ghost.prevId);
+      if (self) self.after(ghost.el);
+      else if (next) next.before(ghost.el);
+      else if (prev) prev.after(ghost.el);
+    }
+  }
+
+  // Shows the row again if Claudian never dropped it, for example if the
+  // archive failed.
+  releaseArchiving(id) {
+    if (!this.archiving.delete(id)) return;
+    for (const row of this.archivingRows(id)) row.classList.remove(ARCHIVED_CLASS);
   }
 
   // Notes when each welcome screen appeared, so the exit copy can continue
