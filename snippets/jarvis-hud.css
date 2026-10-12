@@ -309,6 +309,15 @@ body.theme-dark.minimal-dark-tonal {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-block: 4px;
+}
+/* Hopfälld: ingen marginal under rubriken, annars hamnar texten ovanför mitten */
+.theme-dark .metadata-container.is-collapsed .metadata-properties-heading {
+  margin-block: 0;
+}
+/* Versaler har inga nedstaplar, trimma radrutan så texten centreras optiskt */
+.theme-dark .metadata-properties-title {
+  text-box: trim-both cap alphabetic;
 }
 .theme-dark .metadata-properties-heading .collapse-indicator {
   position: static;
