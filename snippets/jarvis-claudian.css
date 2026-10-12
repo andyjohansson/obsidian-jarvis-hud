@@ -243,6 +243,16 @@
     linear-gradient(180deg, rgba(0, 216, 255, 0.10), rgba(0, 216, 255, 0.04));
   box-shadow: 0 0 14px rgba(0, 216, 255, 0.08);
 }
+/* Listor: markören ligger redan inuti, så ingen extra indrag eller kantmarginal */
+.theme-dark .claudian-message-user > .claudian-message-content :is(ol, ul) {
+  padding-inline-start: 0;
+}
+.theme-dark .claudian-message-user > .claudian-message-content :is(p, ol, ul):first-child {
+  margin-top: 0;
+}
+.theme-dark .claudian-message-user > .claudian-message-content :is(p, ol, ul):last-child {
+  margin-bottom: 0;
+}
 .theme-dark .claudian-message-user ::selection {
   background: rgba(0, 216, 255, 0.35);
 }
