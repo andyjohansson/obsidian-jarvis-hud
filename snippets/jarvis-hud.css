@@ -2,7 +2,8 @@
    JARVIS HUD  ·  snippet för Minimal (dark mode)
    Aktivera: Inställningar → Utseende → CSS-snippets → jarvis-hud
    Påverkar bara mörkt läge. Ljust läge lämnas orört.
-   Med pluginet Style Settings kan du slå av rutnät, glöd och animationer.
+   Med pluginet Style Settings kan du slå av rutnät, glöd, animationer och
+   muspekarna.
    ===================================================================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
@@ -26,6 +27,10 @@ settings:
   -
     id: jarvis-no-statusline
     title: Hide "J.A.R.V.I.S. ONLINE" in the status bar
+    type: class-toggle
+  -
+    id: jarvis-system-cursor
+    title: Use the system mouse cursor
     type: class-toggle
 */
 
@@ -395,11 +400,63 @@ body.theme-dark.minimal-dark-tonal {
   50% { opacity: 0.55; }
 }
 
-/* ---------- 11. Av-knappar (Style Settings) och tillgänglighet ---------- */
+/* ---------- 11. Muspekare ---------- */
+/* Mörk pil med cyan kant. På allt klickbart tänds pilen i cyan och får en
+   HUD-hörnmarkering vid spetsen, men spetsen är fortfarande klickpunkten.
+   Över text blir det en cyan I-balk med ett litet sikte i mitten, och
+   skrivmarkören i editorn blir bredare och glöder. SVG i två upplösningar
+   så de är skarpa på Retina.
+   Obsidian använder --cursor för vanliga ytor och --cursor-link för länkar.
+   Knappar och andra klickbara saker fångas med väljarna nedan, Claudians
+   egna ligger i jarvis-claudian.css. */
+.theme-dark:not(.jarvis-system-cursor) {
+  --j-cursor-arrow: image-set(url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2300d8ff" stroke-width="1.4"/%3E%3Cpath d="M6.3 8.5L6.3 17" stroke="%237deeff" stroke-width="1.2" opacity="0.7"/%3E%3C/svg%3E') 1x, url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2300d8ff" stroke-width="1.4"/%3E%3Cpath d="M6.3 8.5L6.3 17" stroke="%237deeff" stroke-width="1.2" opacity="0.7"/%3E%3C/svg%3E') 2x) 3 2, default;
+  --j-cursor-target: image-set(url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2300d8ff" stroke-width="1.6"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%2302141c" stroke-width="3.2"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%23c8f8ff" stroke-width="1.1"/%3E%3Cpath d="M9.3 11.5L9.3 20" stroke="%23ffffff" stroke-width="1.2" opacity="0.75"/%3E%3C/svg%3E') 1x, url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2300d8ff" stroke-width="1.6"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%2302141c" stroke-width="3.2"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%23c8f8ff" stroke-width="1.1"/%3E%3Cpath d="M9.3 11.5L9.3 20" stroke="%23ffffff" stroke-width="1.2" opacity="0.75"/%3E%3C/svg%3E') 2x) 5 4, pointer;
+  --j-cursor-text: image-set(url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M12.5 5.5Q16 5.5 16 8.5Q16 5.5 19.5 5.5M16 8.5L16 23.5M12.5 26.5Q16 26.5 16 23.5Q16 26.5 19.5 26.5M13.5 16L18.5 16" stroke="%2302141c" stroke-width="3.6"/%3E%3Cpath d="M12.5 5.5Q16 5.5 16 8.5Q16 5.5 19.5 5.5M16 8.5L16 23.5M12.5 26.5Q16 26.5 16 23.5Q16 26.5 19.5 26.5" stroke="%2300d8ff" stroke-width="1.6"/%3E%3Cpath d="M13.5 16L18.5 16" stroke="%23c8f8ff" stroke-width="1.4"/%3E%3C/svg%3E') 1x, url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M12.5 5.5Q16 5.5 16 8.5Q16 5.5 19.5 5.5M16 8.5L16 23.5M12.5 26.5Q16 26.5 16 23.5Q16 26.5 19.5 26.5M13.5 16L18.5 16" stroke="%2302141c" stroke-width="3.6"/%3E%3Cpath d="M12.5 5.5Q16 5.5 16 8.5Q16 5.5 19.5 5.5M16 8.5L16 23.5M12.5 26.5Q16 26.5 16 23.5Q16 26.5 19.5 26.5" stroke="%2300d8ff" stroke-width="1.6"/%3E%3Cpath d="M13.5 16L18.5 16" stroke="%23c8f8ff" stroke-width="1.4"/%3E%3C/svg%3E') 2x) 12 12, text;
+  --cursor: var(--j-cursor-arrow);
+  --cursor-link: var(--j-cursor-target);
+  cursor: var(--j-cursor-arrow);
+}
+.theme-dark:not(.jarvis-system-cursor) :is(
+  a[href], button:not(:disabled), [role="button"], [role="tab"], [role="menuitem"],
+  select, summary, label[for], input[type="checkbox"], input[type="radio"],
+  .clickable-icon, .tree-item-self.is-clickable, .workspace-tab-header,
+  .menu-item, .suggestion-item, .internal-link, .external-link, .tag,
+  .checkbox-container, .dropdown, .setting-hotkey, .vertical-tab-nav-item
+) {
+  cursor: var(--j-cursor-target);
+}
+/* Pilen ärvs överallt, så text får I-balken: editorn, läsläget och fält */
+.theme-dark:not(.jarvis-system-cursor) :is(
+  .cm-content, textarea, [contenteditable="true"],
+  input:is(:not([type]), [type="text"], [type="search"], [type="email"], [type="url"], [type="password"], [type="number"])
+) {
+  cursor: var(--j-cursor-text);
+}
+.theme-dark:not(.jarvis-system-cursor) :where(.markdown-rendered) {
+  cursor: var(--j-cursor-text);
+}
+/* Skrivmarkören: bredare, cyan och glödande */
+.theme-dark .cm-cursor,
+.theme-dark .cm-dropCursor {
+  border-left: 2px solid var(--j-cyan);
+  box-shadow: 0 0 6px rgba(0, 216, 255, 0.8);
+}
+/* Där webbläsarens egen markör används (fält, Claudians inmatning) går
+   den inte att få att glöda, men den blir cyan */
+.theme-dark input,
+.theme-dark textarea,
+.theme-dark .cm-content {
+  caret-color: var(--j-cyan);
+}
+
+/* ---------- 12. Av-knappar (Style Settings) och tillgänglighet ---------- */
 .theme-dark.jarvis-no-glow {
   --j-glow: none;
   --j-glow-box: 0 0 0 1px rgba(0, 216, 255, 0.35);
 }
+.theme-dark.jarvis-no-glow .cm-cursor,
+.theme-dark.jarvis-no-glow .cm-dropCursor { box-shadow: none; }
 .theme-dark.jarvis-no-motion .status-bar::before { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .theme-dark .status-bar::before { animation: none; }

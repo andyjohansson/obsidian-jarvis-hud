@@ -15,6 +15,7 @@ Want the same look in your terminal? Try [Terminal Jarvis HUD](https://github.co
 - Square, glowing checkboxes, outlined tags, HUD-style table headers and properties
 - Cyan accents on the active tab, active file and command palette
 - A pulsing `● J.A.R.V.I.S. ONLINE` indicator in the status bar
+- HUD mouse cursors: a dark arrow with a cyan edge that lights up cyan with a HUD corner bracket on everything clickable, including Claudian, and a cyan I-beam over text. The typing caret is wider and glows
 - Dark mode only, light mode is left untouched
 
 ## Requirements
@@ -69,6 +70,7 @@ With Style Settings installed you get a **Jarvis HUD** section where you can tur
 - the glow
 - animations
 - the status bar text
+- the HUD mouse cursors (back to the system cursors)
 
 Animations are also turned off automatically if your OS has reduced motion enabled.
 
