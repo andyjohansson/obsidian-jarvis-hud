@@ -663,7 +663,23 @@
   100% { height: 0; min-height: 0; padding-block: 0; margin-block: 0; border-width: 0; }
 }
 
-/* ---------- 12. Av-knappar och tillgänglighet ---------- */
+/* ---------- 12. Muspekare: den tända pilen på Claudians klickbara ytor ---------- */
+/* Pekarna definieras i jarvis-hud.css. Knappar fångas redan där, här är
+   Claudians klickbara rubriker, rader och kontroller som inte är knappar. */
+.theme-dark:not(.jarvis-system-cursor) :is(
+  .claudian-tool-header, .claudian-write-edit-header, .claudian-thinking-header,
+  .claudian-subagent-header, .claudian-subagent-tool-header, .claudian-subagent-section-header,
+  .claudian-composer-dropdown-item, .claudian-history-item-content, .claudian-tab-badge,
+  .claudian-code-lang-label, .claudian-session-header-btn, .claudian-session-new-control,
+  .claudian-session-search-control, .claudian-session-archive-control
+) {
+  cursor: var(--j-cursor-target, pointer);
+}
+.theme-dark:not(.jarvis-system-cursor) :where(.claudian-message-content) {
+  cursor: var(--j-cursor-text, text);
+}
+
+/* ---------- 13. Av-knappar och tillgänglighet ---------- */
 .theme-dark.jarvis-no-motion .claudian-tab-badge-streaming,
 .theme-dark.jarvis-no-motion .claudian-session-running-indicator::before,
 .theme-dark.jarvis-no-motion .claudian-session-running-indicator::after,
