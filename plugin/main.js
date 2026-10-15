@@ -279,11 +279,11 @@ function pickGreeting(now, last) {
 }
 
 // Extra layers for the ignition: a core flash and a shockwave.
-function burst() {
-  const el = document.createElement("div");
+function burst(doc) {
+  const el = doc.createElement("div");
   el.className = "jarvis-burst";
   for (const name of ["flash", "wave"]) {
-    const layer = document.createElement("div");
+    const layer = doc.createElement("div");
     layer.className = `jarvis-burst-${name}`;
     el.appendChild(layer);
   }
@@ -317,7 +317,34 @@ module.exports = class JarvisHudFx extends Plugin {
       }
     });
 
-    this.observer = new MutationObserver((mutations) => {
+    this.observers = new Map(); // document -> its mutation observer
+    this.attach(document);
+    this.registerEvent(this.app.workspace.on("window-open", (win) => this.attach(win.doc)));
+    this.registerEvent(this.app.workspace.on("window-close", (win) => this.detach(win.doc)));
+    this.app.workspace.onLayoutReady(() => {
+      // Popouts restored with the layout may open before the plugin loads.
+      this.app.workspace.iterateAllLeaves((leaf) => this.attach(leaf.view.containerEl.ownerDocument));
+      this.greet();
+      this.watchWelcomes();
+      this.scan();
+    });
+  }
+
+  onunload() {
+    this.welcomeObserver?.disconnect();
+    this.all(`.${EXIT_CLASS}`).forEach((el) => el.remove());
+    this.all(`.${ARCHIVED_CLASS}`).forEach((el) => el.classList.remove(ARCHIVED_CLASS));
+    this.all(`.${ARCHIVE_GHOST_CLASS}`).forEach((el) => el.remove());
+    this.all(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
+    this.all(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
+    for (const doc of [...this.observers.keys()]) this.detach(doc);
+  }
+
+  // Popout windows have their own document, so each window gets its own
+  // observer and listeners.
+  attach(doc) {
+    if (this.observers.has(doc)) return;
+    const observer = new MutationObserver((mutations) => {
       if (!mutations.some((m) => m.target.closest?.(CLAUDIAN))) return;
       // Swap the welcome text right away, before the next paint, so
       // Claudian's own greeting never flashes on screen.
@@ -327,20 +354,20 @@ module.exports = class JarvisHudFx extends Plugin {
       this.hideArchiving();
       this.schedule();
     });
-    this.observer.observe(document.body, {
+    observer.observe(doc.body, {
       childList: true,
       subtree: true,
       attributes: true,
       attributeFilter: ["data-running"],
     });
-    this.registerDomEvent(document, "click", (event) => {
+    this.registerDomEvent(doc, "click", (event) => {
       const brand = event.target.closest?.(BRAND);
       const greeting = brand?.parentElement?.querySelector(GREETING);
       if (greeting) this.setGreeting(greeting, true);
     });
     // Capture phase, so it runs even if Claudian stops the click on the button.
     this.registerDomEvent(
-      document,
+      doc,
       "click",
       (event) => {
         const row = event.target.closest?.(ARCHIVE_BUTTON)?.closest(ROW);
@@ -350,34 +377,28 @@ module.exports = class JarvisHudFx extends Plugin {
         this.archiving.add(id);
         this.addGhost(row);
         row.classList.add(ARCHIVED_CLASS);
-        window.setTimeout(() => this.releaseArchiving(id), ARCHIVE_TIMEOUT_MS);
+        doc.win.setTimeout(() => this.releaseArchiving(id), ARCHIVE_TIMEOUT_MS);
       },
       { capture: true },
     );
-    this.registerDomEvent(document, "input", (event) => {
+    this.registerDomEvent(doc, "input", (event) => {
       const input = event.target.closest?.(INPUT);
       // Claudian moves the active tab's input box into a shared slot, so
       // find the welcome screen through the visible tab instead.
       const welcome = input?.closest(CONTAINER)?.querySelector(ACTIVE_WELCOME);
       welcome?.classList.toggle(CHARGING_CLASS, hasText(input));
     });
-    this.app.workspace.onLayoutReady(() => {
-      this.greet();
-      this.watchWelcomes();
-      this.scan();
-    });
+    this.observers.set(doc, observer);
   }
 
-  onunload() {
-    this.observer?.disconnect();
-    this.welcomeObserver?.disconnect();
-    document.querySelectorAll(`.${EXIT_CLASS}`).forEach((el) => el.remove());
-    document
-      .querySelectorAll(`.${ARCHIVED_CLASS}`)
-      .forEach((el) => el.classList.remove(ARCHIVED_CLASS));
-    document.querySelectorAll(`.${ARCHIVE_GHOST_CLASS}`).forEach((el) => el.remove());
-    document.querySelectorAll(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
-    document.querySelectorAll(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
+  detach(doc) {
+    this.observers.get(doc)?.disconnect();
+    this.observers.delete(doc);
+  }
+
+  // Every element matching the selector, across all open windows.
+  all(selector) {
+    return [...this.observers.keys()].flatMap((doc) => [...doc.querySelectorAll(selector)]);
   }
 
   // Batches bursts of mutations into one scan per frame.
@@ -393,10 +414,10 @@ module.exports = class JarvisHudFx extends Plugin {
   // Claudian builds a new welcome screen for every new chat. Elements already
   // swapped are skipped, unless Claudian has written its own text back.
   greet() {
-    for (const el of document.querySelectorAll(BRAND)) {
+    for (const el of this.all(BRAND)) {
       if (el.textContent !== BRAND_TEXT) el.textContent = BRAND_TEXT;
     }
-    for (const el of document.querySelectorAll(GREETING)) {
+    for (const el of this.all(GREETING)) {
       if (el.dataset.jarvisGreeting && el.textContent === el.dataset.jarvisGreeting) continue;
       this.setGreeting(el, false);
     }
@@ -416,7 +437,7 @@ module.exports = class JarvisHudFx extends Plugin {
 
   // Rows for a session being archived, outside the archived list.
   archivingRows(id) {
-    return [...document.querySelectorAll(ROW)].filter(
+    return this.all(ROW).filter(
       (row) => row.dataset.conversationId === id && !row.querySelector(RESTORE_BUTTON),
     );
   }
@@ -463,7 +484,7 @@ module.exports = class JarvisHudFx extends Plugin {
       if (ghost.el.isConnected) continue;
       const find = (rowId) =>
         rowId &&
-        [...document.querySelectorAll(ROW)].find(
+        this.all(ROW).find(
           (r) => r.dataset.conversationId === rowId && r.parentElement.className === ghost.list,
         );
       ghost.el.style.setProperty("--jarvis-fx-offset", `-${Math.round(performance.now() - ghost.start)}ms`);
@@ -486,7 +507,7 @@ module.exports = class JarvisHudFx extends Plugin {
   // Notes when each welcome screen appeared, so the exit copy can continue
   // the reactor's rotation instead of jumping back to the start.
   watchWelcomes() {
-    for (const el of document.querySelectorAll(WELCOME)) {
+    for (const el of this.all(WELCOME)) {
       if (this.welcomes.has(el) || el.classList.contains(EXIT_CLASS)) continue;
       this.welcomes.set(el, performance.now());
       this.welcomeObserver.observe(el, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
@@ -506,7 +527,7 @@ module.exports = class JarvisHudFx extends Plugin {
     ghost.setAttribute("aria-hidden", "true");
     const shown = this.welcomes.get(welcome) ?? performance.now();
     ghost.style.setProperty("--jarvis-fx-offset", `-${Math.round(performance.now() - shown)}ms`);
-    ghost.appendChild(burst());
+    ghost.appendChild(burst(wrapper.ownerDocument));
     wrapper.appendChild(ghost);
     window.setTimeout(() => ghost.remove(), EXIT_MS);
   }
@@ -516,7 +537,7 @@ module.exports = class JarvisHudFx extends Plugin {
     // The same conversation can be listed in several views, so collect
     // state per id before comparing with the previous scan.
     const rows = new Map();
-    for (const row of document.querySelectorAll(ROW)) {
+    for (const row of this.all(ROW)) {
       const id = row.dataset.conversationId;
       if (!rows.has(id)) rows.set(id, []);
       rows.get(id).push(row);

@@ -1,7 +1,7 @@
 {
   "id": "jarvis-hud-fx",
   "name": "Jarvis HUD FX",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "minAppVersion": "1.5.0",
   "description": "Companion to the Jarvis HUD snippets. Adds completion and archive effects to Claudian sessions, replaces Claudian's welcome greeting with Jarvis lines and powers up the welcome arc reactor as you type.",
   "author": "Andy Johansson",
