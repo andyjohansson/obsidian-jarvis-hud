@@ -26,8 +26,16 @@
  *    through re-renders until Claudian drops it. If Claudian has not dropped
  *    it after ARCHIVE_TIMEOUT_MS, the row comes back, so a failed archive is
  *    never hidden for good.
+ *
+ * 5. Greeting context. When you send the first message from the welcome
+ *    screen, the plugin saves the greeting you saw to GREETING_FILE in its
+ *    own folder. The optional Claude Code hook greeting-hook.sh hands it to
+ *    Claude with that message and removes the file, so Claude knows what you
+ *    are replying to. Without the hook the file is simply overwritten next time.
  */
-const { Plugin } = require("obsidian");
+const { Plugin, FileSystemAdapter } = require("obsidian");
+const fs = require("fs");
+const path = require("path");
 
 const CLAUDIAN = '[class^="claudian-"], [class*=" claudian-"]';
 const ROW = ".claudian-history-item[data-conversation-id]";
@@ -59,6 +67,9 @@ const CHARGING_CLASS = "jarvis-charging";
 const EXIT_CLASS = "jarvis-welcome-exit";
 // Must cover the longest exit animation in jarvis-claudian.css.
 const EXIT_MS = 950;
+
+// Read and removed by greeting-hook.sh.
+const GREETING_FILE = "greeting.txt";
 
 // ---------- Greetings ----------
 // {time} is replaced with the current time, e.g. 01:42.
@@ -519,6 +530,7 @@ module.exports = class JarvisHudFx extends Plugin {
   launch(welcome) {
     if (!welcome.classList.contains(CHARGING_CLASS)) return;
     welcome.classList.remove(CHARGING_CLASS);
+    this.saveGreeting(welcome);
     const wrapper = welcome.closest(MESSAGES_WRAPPER);
     if (!wrapper) return;
     const ghost = welcome.cloneNode(true);
@@ -530,6 +542,19 @@ module.exports = class JarvisHudFx extends Plugin {
     ghost.appendChild(burst(wrapper.ownerDocument));
     wrapper.appendChild(ghost);
     window.setTimeout(() => ghost.remove(), EXIT_MS);
+  }
+
+  // Saves the greeting you just replied to for greeting-hook.sh. Written
+  // synchronously, so it is in place before Claude Code runs the hook.
+  saveGreeting(welcome) {
+    const line = welcome.querySelector(GREETING)?.textContent?.trim();
+    const adapter = this.app.vault.adapter;
+    if (!line || !(adapter instanceof FileSystemAdapter)) return;
+    try {
+      fs.writeFileSync(path.join(adapter.getBasePath(), this.manifest.dir, GREETING_FILE), line);
+    } catch (err) {
+      console.warn("Jarvis HUD FX: could not save the greeting", err);
+    }
   }
 
   scan() {
