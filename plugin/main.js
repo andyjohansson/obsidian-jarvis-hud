@@ -77,8 +77,10 @@ const EXIT_MS = 950;
 const THINKING = ".claudian-thinking";
 const MESSAGE_CONTENT = ".claudian-message-content";
 const MIND_CLASS = "jarvis-mind";
-// Width of the working line's scan line, set by the plugin and read in jarvis-claudian.css.
+// Width of the working line's scan line, and where each text on the line
+// starts along it. Set by the plugin and read in jarvis-claudian.css.
 const LINE_WIDTH = "--jarvis-line-w";
+const LINE_X = "--jarvis-x";
 const MIND_SIZE = 40; // CSS pixels, matched in jarvis-claudian.css
 const MIND_NODES = 30;
 // Speed of the whole hologram, 1 is full speed.
@@ -800,6 +802,7 @@ module.exports = class JarvisHudFx extends Plugin {
     for (const [el, observer] of this.lines) {
       observer.disconnect();
       el.style.removeProperty(LINE_WIDTH);
+      for (const span of el.querySelectorAll(":scope > span")) span.style.removeProperty(LINE_X);
     }
     for (const doc of [...this.observers.keys()]) this.detach(doc);
   }
@@ -1012,8 +1015,10 @@ module.exports = class JarvisHudFx extends Plugin {
   }
 
   // Keeps --jarvis-line-w on every working line at the width of its scan
-  // line, so the CSS can put the light in the verb right above the streak.
-  // The scan line runs from the end of the left padding to the right edge.
+  // line, and --jarvis-x on the verb and the timer at where each starts
+  // along it, so the CSS can put the light in the text right above the
+  // streak. The scan line runs from the end of the left padding to the
+  // right edge.
   measureLines() {
     for (const [el, observer] of this.lines) {
       if (el.isConnected) continue;
@@ -1023,13 +1028,16 @@ module.exports = class JarvisHudFx extends Plugin {
     for (const el of this.all(THINKING)) {
       if (this.lines.has(el)) continue;
       const win = el.ownerDocument.defaultView ?? window;
+      const spans = el.querySelectorAll(":scope > span");
       const measure = () => {
-        const width = el.clientWidth - parseFloat(win.getComputedStyle(el).paddingLeft);
-        el.style.setProperty(LINE_WIDTH, `${width}px`);
+        const start = parseFloat(win.getComputedStyle(el).paddingLeft);
+        el.style.setProperty(LINE_WIDTH, `${el.clientWidth - start}px`);
+        for (const span of spans) span.style.setProperty(LINE_X, `${span.offsetLeft - start}px`);
       };
-      // The window's own ResizeObserver, so it also works in pop-outs.
+      // The window's own ResizeObserver, so it also works in pop-outs. The
+      // texts are watched too, since the timer moves when the verb changes.
       const observer = new win.ResizeObserver(measure);
-      observer.observe(el);
+      for (const target of [el, ...spans]) observer.observe(target);
       this.lines.set(el, observer);
       measure();
     }

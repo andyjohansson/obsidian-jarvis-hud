@@ -405,17 +405,24 @@
     jarvis-thinking-shimmer 2.6s linear infinite,
     jarvis-thinking-pulse 1.5s ease-in-out infinite;
 }
-/* With the plugin, which measures the scan line into --jarvis-line-w, the
-   light in the verb is the streak's own: same width, right above it. The
-   verb starts where the scan line starts, so the two share coordinates. */
-.theme-dark .claudian-thinking[style*="--jarvis-line-w"] > span:not(.claudian-thinking-hint) {
+/* With the plugin, which measures the scan line into --jarvis-line-w and
+   where each text starts along it into --jarvis-x, the light in the verb
+   and the timer is the streak's own: same width, right above it. */
+.theme-dark .claudian-thinking[style*="--jarvis-line-w"] > span {
+  --jarvis-text: var(--j-cyan);
+  color: transparent;
   background:
     linear-gradient(90deg, transparent, #e6fbff, transparent)
-      calc(var(--jarvis-line-w) * (var(--jarvis-scan) - 0.15)) 0 / calc(var(--jarvis-line-w) * 0.3) 100% no-repeat,
-    var(--j-cyan);
+      calc(var(--jarvis-line-w) * (var(--jarvis-scan) - 0.15) - var(--jarvis-x, 0px)) 0 / calc(var(--jarvis-line-w) * 0.3) 100% no-repeat,
+    var(--jarvis-text);
   -webkit-background-clip: text;
   background-clip: text;
+}
+.theme-dark .claudian-thinking[style*="--jarvis-line-w"] > span:not(.claudian-thinking-hint) {
   animation: jarvis-thinking-pulse 1.5s ease-in-out infinite;
+}
+.theme-dark .claudian-thinking[style*="--jarvis-line-w"] > .claudian-thinking-hint {
+  --jarvis-text: var(--tx3);
 }
 /* The timer: small, muted, never wrapped */
 .theme-dark .claudian-thinking-hint {
