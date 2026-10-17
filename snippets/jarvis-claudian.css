@@ -1,11 +1,11 @@
 /* =====================================================================
    JARVIS HUD  ·  Claudian add-on
-   Kräver jarvis-hud.css (färger, typsnitt och glöd hämtas därifrån).
-   Aktivera: Inställningar → Utseende → CSS-snippets → jarvis-claudian
-   Påverkar bara mörkt läge.
+   Requires jarvis-hud.css (colors, fonts and glow come from there).
+   Enable: Settings → Appearance → CSS snippets → jarvis-claudian
+   Affects dark mode only.
    ===================================================================== */
 
-/* ---------- 1. Färger: Claudes orange blir arc reactor-cyan ---------- */
+/* ---------- 1. Colors: Claude's orange becomes arc reactor cyan ---------- */
 .theme-dark .claudian-container,
 .theme-dark .claudian-settings {
   --claudian-brand-claude: #00d8ff;
@@ -16,7 +16,7 @@
   --claudian-error: #ff4d5e;
 }
 
-/* ---------- 2. Välkomsttext ---------- */
+/* ---------- 2. Welcome text ---------- */
 .theme-dark .claudian-welcome-text {
   font-family: var(--j-font-hud);
   font-weight: 700;
@@ -26,8 +26,8 @@
   color: var(--j-cyan);
   text-shadow: var(--j-glow);
 }
-/* Jarvis-repliker från pluginet Jarvis HUD FX är hela meningar: mindre,
-   vanlig skiftläge och radbrytning i stället för versaler */
+/* Jarvis lines from the Jarvis HUD FX plugin are full sentences: smaller,
+   normal case and line wrapping instead of capitals */
 .theme-dark .claudian-welcome-greeting[data-jarvis-greeting] {
   max-width: 34em;
   margin-inline: auto;
@@ -41,12 +41,13 @@
   text-wrap: balance;
 }
 
-/* Arc reactor i bakgrunden: laddikonen i stort format och nedtonad. Samma
-   segmentring med ljussvans, samma motroterande bågar och glödande kärna,
-   bara lugnare. --jarvis-reactor-charge (0 till 1) styr hur starkt den
-   lyser. Pluginet Jarvis HUD FX sätter jarvis-charging medan du skriver:
-   reaktorn laddas upp och andas långsamt. Andningen är bara opacitet, så
-   den kostar nästan ingenting. */
+/* Arc reactor in the background: the loading icon, large and dimmed. The
+   same segmented ring with a light tail, the same counter-rotating arcs
+   and glowing core, only calmer. --jarvis-reactor-charge (0 to 1) sets how
+   brightly it shines. The Jarvis HUD FX plugin sets jarvis-charging while
+   you type: the reactor charges up and breathes slowly. The breathing is
+   only opacity, so it costs almost nothing. With the plugin the hologram
+   below takes its place, so this is the fallback without it. */
 @property --jarvis-reactor-charge {
   syntax: "<number>";
   inherits: true;
@@ -80,7 +81,7 @@
   border-radius: 50%;
   pointer-events: none;
 }
-/* Yttre ring: åtta segment med svans som sveper medurs */
+/* Outer ring: eight segments with a tail sweeping clockwise */
 .theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::before {
   width: var(--jarvis-reactor-size);
   background: conic-gradient(rgba(0, 216, 255, 0.01), rgba(0, 216, 255, calc(0.2 + 0.2 * var(--jarvis-reactor-charge))));
@@ -93,7 +94,7 @@
   filter: drop-shadow(0 0 8px rgba(0, 216, 255, calc(0.3 + 0.3 * var(--jarvis-reactor-charge))));
   animation: jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite;
 }
-/* Inre bågar som snurrar moturs */
+/* Inner arcs spinning counterclockwise */
 .theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::after {
   width: calc(var(--jarvis-reactor-size) * 0.56);
   box-sizing: border-box;
@@ -114,10 +115,10 @@
     jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse,
     jarvis-reactor-breathe 1.8s ease-in-out infinite;
 }
-/* Jarvis i stället för reaktorn: pluginet Jarvis HUD FX ritar hologrammet
-   på en canvas bakom välkomsttexten. Lugnt tills du skriver, då lyser det
-   upp och börjar röra på sig. Klick på J.A.R.V.I.S. eller hologrammet
-   retar upp det. Utan pluginet visas reaktorringarna ovan som förut. */
+/* Jarvis instead of the reactor: the Jarvis HUD FX plugin draws the
+   hologram on a canvas behind the welcome text. Calm until you type, then
+   it brightens and starts to stir. Clicking J.A.R.V.I.S. or the hologram
+   provokes it. Without the plugin the reactor rings above show as before. */
 .theme-dark .jarvis-mind-welcome {
   position: absolute;
   top: 50%;
@@ -131,8 +132,8 @@
   filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.3));
   cursor: var(--j-cursor-target, pointer);
 }
-/* Läsbarhet: texten får en mörk gloria och en svag mörk bakgrund, så
-   linjerna bakom dämpas precis där bokstäverna sitter */
+/* Readability: the text gets a dark halo and a faint dark backing, so the
+   lines behind are dimmed exactly where the letters sit */
 .theme-dark .claudian-welcome:has(> .jarvis-mind-welcome) {
   --jarvis-halo: 0 0 3px #05090d, 0 0 8px #05090d, 0 0 16px rgba(5, 9, 13, 0.9);
 }
@@ -151,7 +152,7 @@
   text-shadow: 0 0 8px rgba(0, 216, 255, 0.35), var(--jarvis-halo);
 }
 
-/* När du skickar: hologrammet drar ihop sig och slår ut som ringen gjorde */
+/* On send: the hologram pulls in and bursts outward like the ring did */
 .theme-dark .claudian-welcome.jarvis-welcome-exit > .jarvis-mind-welcome {
   will-change: transform, opacity;
   animation: jarvis-exit-ring 0.85s cubic-bezier(0.3, 0, 0.2, 1) forwards;
@@ -161,13 +162,13 @@
   50% { opacity: 0.65; }
 }
 
-/* Tändning när du skickar: Claudian döljer välkomstvyn direkt, så pluginet
-   lägger en kopia ovanpå med två extra lager (.jarvis-burst) och tar bort
-   den efteråt. Bara transform och opacitet animeras, så allt körs på
-   grafikkortet och laggar inte medan Claudian ritar upp ditt meddelande.
-   0-0,2 s   bågarna sugs in i kärnan och ringen drar ihop sig
-   0,2 s     kärnan blixtrar, en tryckvåg går ut och ringen slår ut
-   därefter  texten slocknar som en gammal bildskärm och allt tonar ut */
+/* Ignition on send: Claudian hides the welcome screen at once, so the
+   plugin lays a copy over it with two extra layers (.jarvis-burst) and
+   removes it afterwards. Only transform and opacity are animated, so it
+   all runs on the GPU and does not lag while Claudian renders your message.
+   0-0.2 s    the arcs are pulled into the core and the ring contracts
+   0.2 s      the core flashes, a shockwave goes out and the ring bursts
+   after      the text switches off like an old CRT screen and all fades */
 .theme-dark .claudian-welcome.jarvis-welcome-exit {
   --jarvis-reactor-charge: 1.8;
   position: absolute;
@@ -212,14 +213,14 @@
   border-radius: 50%;
   opacity: 0;
 }
-/* Blixten i kärnan */
+/* The flash in the core */
 .jarvis-burst-flash {
   width: 180px;
   aspect-ratio: 1;
   background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(170, 247, 255, 0.6) 30%, rgba(0, 216, 255, 0.15) 65%, transparent);
   animation: jarvis-burst-flash 0.6s ease-out 0.18s forwards;
 }
-/* Tryckvågen: en tunn ring som skalas upp över vyn */
+/* The shockwave: a thin ring that scales up across the view */
 .jarvis-burst-wave {
   width: 800px;
   aspect-ratio: 1;
@@ -258,7 +259,7 @@
   100% { scale: 1.6; opacity: 0; }
 }
 
-/* Hemlig ny replik: klick på J.A.R.V.I.S. ger ett kort omstartsflimmer */
+/* Secret new line: clicking J.A.R.V.I.S. gives a short reboot flicker */
 .theme-dark .claudian-welcome-greeting.jarvis-reboot {
   animation: jarvis-reboot 0.45s steps(1, end) 1;
 }
@@ -271,8 +272,8 @@
   75%, 100% { opacity: 1; }
 }
 
-/* ---------- 3. Meddelanden ---------- */
-/* Dina meddelanden: HUD-ram med hörn */
+/* ---------- 3. Messages ---------- */
+/* Your messages: HUD frame with corners */
 .theme-dark .claudian-message-user > .claudian-message-content {
   --j-c: var(--j-cyan);
   border: 1px solid rgba(0, 216, 255, 0.22);
@@ -285,7 +286,7 @@
     linear-gradient(180deg, rgba(0, 216, 255, 0.10), rgba(0, 216, 255, 0.04));
   box-shadow: 0 0 14px rgba(0, 216, 255, 0.08);
 }
-/* Listor: markören ligger redan inuti, så ingen extra indrag eller kantmarginal */
+/* Lists: the marker is already inside, so no extra indent or edge margin */
 .theme-dark .claudian-message-user > .claudian-message-content :is(ol, ul) {
   padding-inline-start: 0;
 }
@@ -299,7 +300,7 @@
   background: rgba(0, 216, 255, 0.35);
 }
 
-/* Claudes svar: tunn linje i vänsterkant */
+/* Claude's replies: a thin line on the left edge */
 .theme-dark .claudian-message-assistant {
   border-left: 1px solid rgba(0, 216, 255, 0.18);
 }
@@ -316,7 +317,7 @@
   color: var(--tx2);
 }
 
-/* ---------- 4. Thinking: pulserande HUD-etikett ---------- */
+/* ---------- 4. Thinking: HUD label and the working line ---------- */
 .theme-dark .claudian-thinking,
 .theme-dark .claudian-thinking-label {
   font-family: var(--j-font-hud);
@@ -332,10 +333,10 @@
   color: var(--tx2);
 }
 
-/* Arbetsraden medan Jarvis jobbar: ett ljussvep glider genom verbet och
-   en skanningslinje sveper under raden. Timern blir en diskret
-   telemetrirad som inte bryts mitt i. Pluginet Jarvis HUD FX lägger till
-   Jarvis medvetande framför: en sfär av neuroner där signaler tänds. */
+/* The working line while Jarvis works: a light sweep glides through the
+   verb and a scan line sweeps under the row. The timer becomes discreet
+   telemetry that never wraps. The Jarvis HUD FX plugin adds Jarvis's
+   mind in front: a sphere of neurons where signals light up. */
 .theme-dark .claudian-thinking {
   position: relative;
   display: flex;
@@ -351,7 +352,7 @@
   min-height: 36px;
   padding-left: 42px;
 }
-/* Medvetandet: canvasen ritas av pluginet, 40 px som MIND_SIZE i main.js */
+/* The mind: the canvas is drawn by the plugin, 40 px like MIND_SIZE in main.js */
 .theme-dark .jarvis-mind {
   position: absolute;
   left: -4px;
@@ -362,7 +363,7 @@
   pointer-events: none;
   filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.45));
 }
-/* Skanningslinjen: ett ljusstreck som sveper fram och tillbaka */
+/* The scan line: a streak of light sweeping back and forth */
 .theme-dark .claudian-thinking::after {
   content: "";
   position: absolute;
@@ -379,7 +380,7 @@
 .theme-dark .claudian-thinking:has(> .jarvis-mind)::after {
   left: 42px;
 }
-/* Verbet: ljussvep genom texten */
+/* The verb: a light sweep through the text */
 .theme-dark .claudian-thinking > span:not(.claudian-thinking-hint) {
   color: transparent;
   background: linear-gradient(100deg, var(--j-cyan) 40%, #e6fbff 50%, var(--j-cyan) 60%) 0 0 / 250% 100%;
@@ -389,7 +390,7 @@
   filter: drop-shadow(0 0 5px rgba(0, 216, 255, 0.5));
   animation: jarvis-thinking-shimmer 2.6s linear infinite;
 }
-/* Timern: liten, dämpad, aldrig radbruten */
+/* The timer: small, muted, never wrapped */
 .theme-dark .claudian-thinking-hint {
   font-family: var(--font-monospace);
   font-size: 0.72em;
@@ -405,13 +406,13 @@
   to { background-position: -50% 0; }
 }
 @keyframes jarvis-thinking-scan {
-  /* Ljusstrecket glider halva linjens längd ut förbi varje ände innan det vänder */
+  /* The streak travels half the line's length past each end before turning back */
   from { background-position: -115% 0, 0 0; }
   to { background-position: 215% 0, 0 0; }
 }
 
 
-/* ---------- 5. Inmatningsrutan ---------- */
+/* ---------- 5. The input box ---------- */
 .theme-dark .claudian-input-wrapper {
   --claudian-input-wrapper-border-color: rgba(0, 216, 255, 0.28);
   --claudian-input-wrapper-radius: 3px;
@@ -437,7 +438,7 @@
   color: var(--j-cyan);
 }
 
-/* ---------- 6. Flikar ---------- */
+/* ---------- 6. Tabs ---------- */
 .theme-dark .claudian-tab-badge {
   font-family: var(--j-font-hud);
   font-weight: 600;
@@ -453,7 +454,7 @@
   animation: jarvis-pulse 1.6s ease-in-out infinite;
 }
 
-/* ---------- 7. Verktygsanrop: terminalkänsla ---------- */
+/* ---------- 7. Tool calls: terminal feel ---------- */
 .theme-dark .claudian-tool-icon,
 .theme-dark .claudian-tool-icon svg {
   color: var(--j-cyan);
@@ -470,7 +471,7 @@
   color: #7deeff;
 }
 
-/* ---------- 8. Kod och diffar ---------- */
+/* ---------- 8. Code and diffs ---------- */
 .theme-dark .claudian-code-wrapper pre,
 .theme-dark .claudian-message-content pre {
   background-color: rgba(0, 12, 20, 0.85);
@@ -498,7 +499,7 @@
   color: #ffb3ba;
 }
 
-/* ---------- 9. Att göra-listor och subagenter ---------- */
+/* ---------- 9. To-do lists and subagents ---------- */
 .theme-dark .claudian-todo-list-container .claudian-todo-in_progress .claudian-todo-status-icon {
   color: var(--j-cyan);
   filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.6));
@@ -515,14 +516,14 @@
 .theme-dark .claudian-subagent-status.status-completed { color: #3dffb8; }
 .theme-dark .claudian-subagent-status.status-error { color: #ff4d5e; }
 
-/* ---------- 10. Zen-läge ---------- */
+/* ---------- 10. Zen mode ---------- */
 .theme-dark .claudian-zen-bar {
   border-top: 1px solid rgba(0, 216, 255, 0.3);
   box-shadow: 0 -6px 20px rgba(0, 216, 255, 0.06);
 }
 
 /* ---------- 11. Spinner: arc reactor ---------- */
-/* Ersätter Claudians roterande SVG med en segmenterad ring och en pulserande kärna */
+/* Replaces Claudian's spinning SVG with a segmented ring and a pulsing core */
 .theme-dark .claudian-session-running-indicator,
 .theme-dark .claudian-session-group-running-indicator {
   position: relative;
@@ -534,7 +535,7 @@
 .theme-dark .claudian-session-group-running-indicator svg {
   display: none;
 }
-/* Yttre ring: segment med svans som sveper medurs */
+/* Outer ring: segments with a tail sweeping clockwise */
 .theme-dark .claudian-session-running-indicator::before,
 .theme-dark .claudian-session-group-running-indicator::before {
   content: "";
@@ -551,7 +552,7 @@
     jarvis-reactor-spin 3s linear infinite,
     jarvis-reactor-pulse 2s ease-in-out infinite;
 }
-/* Inre båge som snurrar moturs runt en glödande kärna */
+/* Inner arc spinning counterclockwise around a glowing core */
 .theme-dark .claudian-session-running-indicator::after,
 .theme-dark .claudian-session-group-running-indicator::after {
   content: "";
@@ -578,9 +579,10 @@
   50% { opacity: 1; filter: drop-shadow(0 0 3px #e6fbff) drop-shadow(0 0 8px #00d8ff); }
 }
 
-/* Klar: HUD-hörn låser fast runt raden, sedan tänds en bock där reaktorn satt.
-   Kräver pluginet Jarvis HUD FX (plugin/), som sätter klassen bara när en
-   session precis blivit klar. Utan pluginet händer ingenting. */
+/* Done: HUD corners lock onto the row, then a check mark lights up where
+   the reactor was. Needs the Jarvis HUD FX plugin (plugin/), which sets
+   the class only when a session has just finished. Without the plugin
+   nothing happens. */
 .theme-dark .claudian-history-item.jarvis-just-completed {
   position: relative;
 }
@@ -631,9 +633,10 @@
   100% { transform: rotate(45deg) scale(1); opacity: 0; }
 }
 
-/* Statuskolumn: varje rad har en fast yta i högerkanten där spinner, bock,
-   osedd-punkt och Claudians egna statusikoner delar samma mittpunkt
-   (20 px från kanten). Texten flyttar sig aldrig när statusen ändras. */
+/* Status column: each row has a fixed area on the right edge where the
+   spinner, check mark, unseen dot and Claudian's own status icons share
+   the same center (20 px from the edge). The text never moves when the
+   status changes. */
 .theme-dark .claudian-session-sidebar .claudian-history-item {
   padding-inline-end: 32px;
 }
@@ -649,10 +652,10 @@
   height: 16px;
 }
 
-/* Hela raden är klickbar: Claudian lyssnar bara på textytan, så den får en
-   osynlig yta som täcker raden. Ytan ligger i textytan, så klicket hanteras
-   precis som förut. Knapparna ligger ovanpå och statusikonerna släpper
-   igenom klick. */
+/* The whole row is clickable: Claudian only listens on the text area, so
+   it gets an invisible layer covering the row. The layer sits inside the
+   text area, so the click is handled exactly as before. The buttons sit
+   on top and the status icons let clicks through. */
 .theme-dark .claudian-session-sidebar .claudian-history-item-content::before {
   content: "";
   position: absolute;
@@ -667,9 +670,9 @@
   pointer-events: none;
 }
 
-/* Klar men osedd: liten, stilla cyan punkt i statuskolumnen.
-   Claudian sätter --attention på raden tills sessionen öppnats.
-   Punkten väntar tills klar-effekten ovan är färdig. */
+/* Done but unseen: a small, still cyan dot in the status column.
+   Claudian sets --attention on the row until the session is opened.
+   The dot waits until the done effect above has finished. */
 .theme-dark .claudian-session-sidebar .claudian-history-item--attention:not(.jarvis-just-completed)::after {
   content: "";
   position: absolute;
@@ -684,14 +687,14 @@
   opacity: 0.8;
   pointer-events: none;
 }
-/* Ersätter Claudians blinkande rubrik med fast, ljus text. Punkten räcker som signal. */
+/* Replaces Claudian's blinking title with steady, bright text. The dot is signal enough. */
 .theme-dark .claudian-session-sidebar .claudian-history-item--attention .claudian-history-item-title {
   color: var(--text-normal);
   animation: none;
 }
 
-/* Aktiv chatt: glödande cyan markör i vänsterkant, svag ljuskägla och cyan rubrik.
-   Ritas med bakgrundslager, så klar-effektens ::before och ::after lämnas ifred. */
+/* Active chat: a glowing cyan marker on the left edge, a faint light cone and a cyan title.
+   Drawn with background layers, so the done effect's ::before and ::after are left alone. */
 .theme-dark .claudian-session-sidebar .claudian-history-item.active,
 .theme-dark .claudian-session-sidebar .claudian-history-item.active:hover {
   border-radius: 2px;
@@ -705,7 +708,7 @@
   text-shadow: 0 0 6px rgba(0, 216, 255, 0.45);
 }
 
-/* Flikar som är klara men osedda: cyan ram och samma punkt i hörnet */
+/* Tabs that are done but unseen: a cyan frame and the same dot in the corner */
 .theme-dark .claudian-tab-badge-review {
   position: relative;
   border-color: rgba(0, 216, 255, 0.7);
@@ -724,7 +727,7 @@
   opacity: 0.8;
 }
 
-/* Övriga laddsnurror: cyan med glöd */
+/* Other loading spinners: cyan with a glow */
 .theme-dark .claudian-inline-spinner,
 .theme-dark .claudian-tab-hydration-loading::before {
   border-color: rgba(0, 216, 255, 0.15);
@@ -737,11 +740,11 @@
   filter: drop-shadow(0 0 3px rgba(0, 216, 255, 0.7));
 }
 
-/* Arkivering: raden "stänger sig själv". Samma HUD-hörn som när en session
-   blir klar låser fast runt raden, trycks ihop till en glödande linje medan
-   innehållet viks undan, och linjen krymper mot mitten medan raden fälls
-   ihop. Pluginet Jarvis HUD FX döljer den riktiga raden direkt och lägger en
-   kopia (.jarvis-archive-ghost) på dess plats som spelar effekten. */
+/* Archiving: the row "closes itself". The same HUD corners as when a
+   session finishes lock onto the row and squeeze into a glowing line while
+   the content folds away, and the line shrinks towards the middle while
+   the row collapses. The Jarvis HUD FX plugin hides the real row at once
+   and puts a copy (.jarvis-archive-ghost) in its place that plays the effect. */
 .theme-dark .claudian-history-item.jarvis-archived {
   display: none;
 }
@@ -750,7 +753,7 @@
   overflow: hidden;
   pointer-events: none;
   interpolate-size: allow-keywords;
-  /* Fälls ihop under andra halvan, när linjen redan har bildats */
+  /* Collapses during the second half, once the line has formed */
   animation: jarvis-archive-collapse 0.375s ease-in-out calc(var(--jarvis-fx-offset, 0ms) + 0.375s) 1 both;
 }
 .theme-dark .claudian-history-item.jarvis-archive-ghost > * {
@@ -776,27 +779,28 @@
   filter: drop-shadow(0 0 3px rgba(0, 216, 255, 0.8));
   animation: jarvis-archive-lock 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) var(--jarvis-fx-offset, 0ms) 1 both;
 }
-/* Hörnen låser fast, trycks ihop till en linje, linjen krymper mot mitten */
+/* The corners lock on, squeeze into a line, and the line shrinks towards the middle */
 @keyframes jarvis-archive-lock {
   0% { inset: -5px -14px; opacity: 0; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0); }
   25% { inset: 0; opacity: 1; box-shadow: inset 0 0 0 200px rgba(0, 216, 255, 0.16), 0 0 14px rgba(0, 216, 255, 0.35); }
   50% { inset: calc(50% - 1px) 0; opacity: 1; box-shadow: inset 0 0 0 200px rgba(125, 238, 255, 0.9), 0 0 10px rgba(0, 216, 255, 0.8); }
   100% { inset: calc(50% - 1px) 50%; opacity: 0; box-shadow: inset 0 0 0 200px rgba(125, 238, 255, 0.9), 0 0 6px rgba(0, 216, 255, 0.6); }
 }
-/* Innehållet viks ihop mot mittlinjen */
+/* The content folds towards the center line */
 @keyframes jarvis-archive-fold {
   0%, 25% { opacity: 1; scale: 1 1; }
   50%, 100% { opacity: 0; scale: 1 0.1; }
 }
-/* Raden fälls ihop så listan sluter sig mjukt */
+/* The row collapses so the list closes up smoothly */
 @keyframes jarvis-archive-collapse {
   0% { height: auto; }
   100% { height: 0; min-height: 0; padding-block: 0; margin-block: 0; border-width: 0; }
 }
 
-/* ---------- 12. Muspekare: den tända pilen på Claudians klickbara ytor ---------- */
-/* Pekarna definieras i jarvis-hud.css. Knappar fångas redan där, här är
-   Claudians klickbara rubriker, rader och kontroller som inte är knappar. */
+/* ---------- 12. Mouse cursors: the lit arrow on Claudian's clickable areas ---------- */
+/* The cursors are defined in jarvis-hud.css. Buttons are caught there
+   already; these are Claudian's clickable headers, rows and controls that
+   are not buttons. */
 .theme-dark:not(.jarvis-system-cursor) :is(
   .claudian-tool-header, .claudian-write-edit-header, .claudian-thinking-header,
   .claudian-subagent-header, .claudian-subagent-tool-header, .claudian-subagent-section-header,
@@ -810,7 +814,7 @@
   cursor: var(--j-cursor-text, text);
 }
 
-/* ---------- 13. Av-knappar och tillgänglighet ---------- */
+/* ---------- 13. Off switches and accessibility ---------- */
 .theme-dark.jarvis-no-motion .claudian-thinking::after,
 .theme-dark.jarvis-no-motion .claudian-thinking > span,
 .theme-dark.jarvis-no-motion .claudian-tab-badge-streaming,

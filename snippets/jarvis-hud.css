@@ -1,9 +1,9 @@
 /* =====================================================================
-   JARVIS HUD  ·  snippet för Minimal (dark mode)
-   Aktivera: Inställningar → Utseende → CSS-snippets → jarvis-hud
-   Påverkar bara mörkt läge. Ljust läge lämnas orört.
-   Med pluginet Style Settings kan du slå av rutnät, glöd, animationer och
-   muspekarna.
+   JARVIS HUD  ·  snippet for Minimal (dark mode)
+   Enable: Settings → Appearance → CSS snippets → jarvis-hud
+   Affects dark mode only. Light mode is left untouched.
+   With the Style Settings plugin you can turn off the grid, glow,
+   animations and mouse cursors.
    ===================================================================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
@@ -34,12 +34,12 @@ settings:
     type: class-toggle
 */
 
-/* ---------- 1. Palett och Minimal-variabler ---------- */
+/* ---------- 1. Palette and Minimal variables ---------- */
 body.theme-dark,
 body.theme-dark.minimal-default-dark,
 body.theme-dark.minimal-dark-black,
 body.theme-dark.minimal-dark-tonal {
-  /* Jarvis-färger */
+  /* Jarvis colors */
   --j-cyan: #00d8ff;
   --j-cyan-rgb: 0, 216, 255;
   --j-cyan-soft: rgba(0, 216, 255, 0.14);
@@ -50,11 +50,11 @@ body.theme-dark.minimal-dark-tonal {
   --j-glow: 0 0 6px rgba(0, 216, 255, 0.55), 0 0 18px rgba(0, 216, 255, 0.18);
   --j-glow-box: 0 0 0 1px rgba(0, 216, 255, 0.35), 0 0 16px rgba(0, 216, 255, 0.15);
 
-  /* Typsnitt */
+  /* Fonts */
   --j-font-hud: "Rajdhani", "Orbitron", "Eurostile", "Bahnschrift", var(--font-interface-theme), sans-serif;
   --font-monospace-theme: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 
-  /* Minimal-bas */
+  /* Minimal base */
   --base-h: 205;
   --base-s: 45%;
   --base-l: 5%;
@@ -63,7 +63,7 @@ body.theme-dark.minimal-dark-tonal {
   --accent-l: 50%;
 
   --bg1: #05090f;          /* editor */
-  --bg2: #03060b;          /* sidopaneler */
+  --bg2: #03060b;          /* side panels */
   --bg3: rgba(0, 216, 255, 0.08);
   --ui1: rgba(0, 216, 255, 0.12);
   --ui2: rgba(0, 216, 255, 0.24);
@@ -78,7 +78,7 @@ body.theme-dark.minimal-dark-tonal {
   --hl1: rgba(0, 216, 255, 0.22);
   --hl2: rgba(255, 179, 71, 0.28);
 
-  /* Obsidian-kärnvariabler */
+  /* Obsidian core variables */
   --text-selection: rgba(0, 216, 255, 0.25);
   --text-highlight-bg: rgba(var(--j-gold-rgb), 0.22);
   --caret-color: var(--j-cyan);
@@ -103,7 +103,7 @@ body.theme-dark.minimal-dark-tonal {
   --scrollbar-thumb-bg: rgba(0, 216, 255, 0.18);
   --scrollbar-active-thumb-bg: rgba(0, 216, 255, 0.4);
 
-  /* Graf */
+  /* Graph */
   --graph-node: #6fdcff;
   --graph-node-focused: var(--j-cyan);
   --graph-node-unresolved: #2c4a58;
@@ -112,7 +112,7 @@ body.theme-dark.minimal-dark-tonal {
   --graph-line: rgba(0, 216, 255, 0.18);
 }
 
-/* ---------- 2. Bakgrund: rutnät och svag reaktorglöd ---------- */
+/* ---------- 2. Background: grid and a faint reactor glow ---------- */
 .theme-dark .workspace-leaf-content .view-content {
   background-color: var(--bg1);
   background-image:
@@ -133,7 +133,7 @@ body.theme-dark.minimal-dark-tonal {
   background: transparent;
 }
 
-/* ---------- 3. Rubriker ---------- */
+/* ---------- 3. Headings ---------- */
 .theme-dark .inline-title,
 .theme-dark .markdown-rendered h1, .theme-dark .HyperMD-header-1,
 .theme-dark .markdown-rendered h2, .theme-dark .HyperMD-header-2,
@@ -150,8 +150,8 @@ body.theme-dark.minimal-dark-tonal {
   font-weight: 700;
   text-shadow: var(--j-glow);
 }
-/* Iconic lägger titeln i en egen wrapper, så Minimals läsbredd träffar den inte.
-   Syns i Live Preview, t.ex. i ett eget fönster. */
+/* Iconic puts the title in its own wrapper, so Minimal's readable width misses it.
+   Shows in Live Preview, for example in a separate window. */
 .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer > .iconic-title-wrapper {
   max-width: var(--max-width);
   width: var(--line-width);
@@ -194,7 +194,7 @@ body.theme-dark.minimal-dark-tonal {
   font-weight: 600;
 }
 
-/* ---------- 4. Länkar, markering, fetstil ---------- */
+/* ---------- 4. Links, highlights, bold ---------- */
 .theme-dark .markdown-rendered a.internal-link,
 .theme-dark .cm-hmd-internal-link {
   text-decoration: none;
@@ -222,7 +222,7 @@ body.theme-dark.minimal-dark-tonal {
   opacity: 0.5;
 }
 
-/* ---------- 5. Callouts med HUD-hörn ---------- */
+/* ---------- 5. Callouts with HUD corners ---------- */
 .theme-dark .callout {
   --j-c: rgb(var(--callout-color));
   border: 1px solid rgba(var(--callout-color), 0.22);
@@ -246,7 +246,7 @@ body.theme-dark.minimal-dark-tonal {
   font-weight: 700;
 }
 
-/* ---------- 6. Kod, tabeller, citat ---------- */
+/* ---------- 6. Code, tables, quotes ---------- */
 .theme-dark .markdown-rendered pre,
 .theme-dark .HyperMD-codeblock {
   background-color: rgba(0, 12, 20, 0.85) !important;
@@ -277,7 +277,7 @@ body.theme-dark.minimal-dark-tonal {
   background: linear-gradient(90deg, rgba(0, 216, 255, 0.06), transparent 70%);
 }
 
-/* ---------- 7. Checkboxar och taggar ---------- */
+/* ---------- 7. Checkboxes and tags ---------- */
 .theme-dark input[type="checkbox"] {
   border-radius: 2px;
 }
@@ -297,25 +297,25 @@ body.theme-dark.minimal-dark-tonal {
   letter-spacing: 0.04em;
 }
 
-/* ---------- 8. Egenskaper (frontmatter) ---------- */
+/* ---------- 8. Properties (frontmatter) ---------- */
 .theme-dark .metadata-container {
   border: 1px solid var(--j-cyan-line);
   border-radius: 2px;
   background: rgba(0, 216, 255, 0.03);
   padding: 4px 10px;
 }
-/* Fäll-pilen ska ligga inne i ramen, inte utanför */
+/* The fold arrow belongs inside the frame, not outside it */
 .theme-dark .metadata-properties-heading {
   display: flex;
   align-items: center;
   gap: 6px;
   padding-block: 4px;
 }
-/* Hopfälld: ingen marginal under rubriken, annars hamnar texten ovanför mitten */
+/* Collapsed: no margin under the heading, or the text sits above center */
 .theme-dark .metadata-container.is-collapsed .metadata-properties-heading {
   margin-block: 0;
 }
-/* Versaler har inga nedstaplar, trimma radrutan så texten centreras optiskt */
+/* Capitals have no descenders, so trim the line box to center the text optically */
 .theme-dark .metadata-properties-title {
   text-box: trim-both cap alphabetic;
 }
@@ -333,7 +333,7 @@ body.theme-dark.minimal-dark-tonal {
   color: var(--tx2);
 }
 
-/* ---------- 9. Gränssnitt: flikar, filträd, paneler ---------- */
+/* ---------- 9. Interface: tabs, file tree, panels ---------- */
 .theme-dark .workspace-tab-header-inner-title,
 .theme-dark .nav-folder-title-content,
 .theme-dark .workspace-sidedock-vault-profile,
@@ -364,7 +364,7 @@ body.theme-dark.minimal-dark-tonal {
   background: rgba(0, 216, 255, 0.06);
 }
 
-/* Kommandopalett, snabbväxlare och modaler */
+/* Command palette, quick switcher and modals */
 .theme-dark .modal,
 .theme-dark .prompt,
 .theme-dark .menu,
@@ -391,7 +391,7 @@ body.theme-dark.minimal-dark-tonal {
   font-weight: 700;
 }
 
-/* ---------- 10. Statusrad: J.A.R.V.I.S. ONLINE ---------- */
+/* ---------- 10. Status bar: J.A.R.V.I.S. ONLINE ---------- */
 .theme-dark .status-bar {
   color: var(--tx2);
   border-top: 1px solid var(--j-cyan-line);
@@ -419,15 +419,15 @@ body.theme-dark.minimal-dark-tonal {
   50% { opacity: 0.55; }
 }
 
-/* ---------- 11. Muspekare ---------- */
-/* Mörk pil med cyan kant. På allt klickbart tänds pilen i cyan och får en
-   HUD-hörnmarkering vid spetsen, men spetsen är fortfarande klickpunkten.
-   Över text blir det en cyan I-balk med ett litet sikte i mitten, och
-   skrivmarkören i editorn blir bredare och glöder. SVG i två upplösningar
-   så de är skarpa på Retina.
-   Obsidian använder --cursor för vanliga ytor och --cursor-link för länkar.
-   Knappar och andra klickbara saker fångas med väljarna nedan, Claudians
-   egna ligger i jarvis-claudian.css. */
+/* ---------- 11. Mouse cursors ---------- */
+/* A dark arrow with a cyan edge. On anything clickable the arrow lights up
+   cyan and gets a HUD corner mark at the tip, but the tip is still the
+   click point. Over text it becomes a cyan I-beam with a small crosshair
+   in the middle, and the editor's text caret gets wider and glows. SVGs in
+   two resolutions so they stay sharp on Retina.
+   Obsidian uses --cursor for regular surfaces and --cursor-link for links.
+   Buttons and other clickable things are caught by the selectors below,
+   Claudian's own are in jarvis-claudian.css. */
 .theme-dark:not(.jarvis-system-cursor) {
   --j-cursor-arrow: image-set(url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2300d8ff" stroke-width="1.4"/%3E%3Cpath d="M6.3 8.5L6.3 17" stroke="%237deeff" stroke-width="1.2" opacity="0.7"/%3E%3C/svg%3E') 1x, url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M4 3L4 23L9.2 18.2L12.6 26L16 24.6L12.6 17L19.5 17Z" fill="%2304131b" stroke="%2300d8ff" stroke-width="1.4"/%3E%3Cpath d="M6.3 8.5L6.3 17" stroke="%237deeff" stroke-width="1.2" opacity="0.7"/%3E%3C/svg%3E') 2x) 3 2, default;
   --j-cursor-target: image-set(url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2300d8ff" stroke-width="1.6"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%2302141c" stroke-width="3.2"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%23c8f8ff" stroke-width="1.1"/%3E%3Cpath d="M9.3 11.5L9.3 20" stroke="%23ffffff" stroke-width="1.2" opacity="0.75"/%3E%3C/svg%3E') 1x, url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2302141c" stroke-width="3.5"/%3E%3Cpath d="M3 10.5L3 2.5L11 2.5" stroke="%2300d8ff" stroke-width="1.6"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%2302141c" stroke-width="3.2"/%3E%3Cpath d="M7 6L7 26L12.2 21.2L15.6 29L19 27.6L15.6 20L22.5 20Z" fill="%2300d8ff" stroke="%23c8f8ff" stroke-width="1.1"/%3E%3Cpath d="M9.3 11.5L9.3 20" stroke="%23ffffff" stroke-width="1.2" opacity="0.75"/%3E%3C/svg%3E') 2x) 5 4, pointer;
@@ -445,7 +445,7 @@ body.theme-dark.minimal-dark-tonal {
 ) {
   cursor: var(--j-cursor-target);
 }
-/* Pilen ärvs överallt, så text får I-balken: editorn, läsläget och fält */
+/* The arrow is inherited everywhere, so text gets the I-beam: the editor, reading view and fields */
 .theme-dark:not(.jarvis-system-cursor) :is(
   .cm-content, textarea, [contenteditable="true"],
   input:is(:not([type]), [type="text"], [type="search"], [type="email"], [type="url"], [type="password"], [type="number"])
@@ -455,21 +455,21 @@ body.theme-dark.minimal-dark-tonal {
 .theme-dark:not(.jarvis-system-cursor) :where(.markdown-rendered) {
   cursor: var(--j-cursor-text);
 }
-/* Skrivmarkören: bredare, cyan och glödande */
+/* The text caret: wider, cyan and glowing */
 .theme-dark .cm-cursor,
 .theme-dark .cm-dropCursor {
   border-left: 2px solid var(--j-cyan);
   box-shadow: 0 0 6px rgba(0, 216, 255, 0.8);
 }
-/* Där webbläsarens egen markör används (fält, Claudians inmatning) går
-   den inte att få att glöda, men den blir cyan */
+/* Where the browser's own caret is used (fields, Claudian's input) it
+   cannot be made to glow, but it turns cyan */
 .theme-dark input,
 .theme-dark textarea,
 .theme-dark .cm-content {
   caret-color: var(--j-cyan);
 }
 
-/* ---------- 12. Av-knappar (Style Settings) och tillgänglighet ---------- */
+/* ---------- 12. Off switches (Style Settings) and accessibility ---------- */
 .theme-dark.jarvis-no-glow {
   --j-glow: none;
   --j-glow-box: 0 0 0 1px rgba(0, 216, 255, 0.35);
