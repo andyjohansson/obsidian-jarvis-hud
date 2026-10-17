@@ -400,6 +400,9 @@ body.theme-dark.minimal-dark-tonal {
 .theme-dark .status-bar::before {
   content: "J.A.R.V.I.S. ONLINE";
   order: -1;
+  /* The box must hug the text, or it stretches to the full height of the
+     status bar and the dot ends up below the text */
+  align-self: center;
   margin-right: auto;
   padding: 0 10px 0 18px;
   color: var(--j-cyan);
