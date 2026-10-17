@@ -336,8 +336,11 @@
 /* The working line while Jarvis works: a light sweep glides through the
    verb and a scan line sweeps under the row. The timer becomes discreet
    telemetry that never wraps. The Jarvis HUD FX plugin adds Jarvis's
-   mind in front: a sphere of neurons where signals light up. */
+   mind in front: a sphere of neurons where signals light up. Claudian
+   pulses the opacity of the whole line, which made the mind look like it
+   was dying, so only the verb pulses here. */
 .theme-dark .claudian-thinking {
+  animation: none;
   position: relative;
   display: flex;
   flex-wrap: wrap;
@@ -375,7 +378,7 @@
     linear-gradient(90deg, transparent, #7deeff, transparent) 0 0 / 30% 100% no-repeat,
     rgba(0, 216, 255, 0.12);
   filter: drop-shadow(0 0 3px var(--j-cyan));
-  animation: jarvis-thinking-scan 7s ease-in-out infinite alternate;
+  animation: jarvis-thinking-scan 3s ease-in-out infinite alternate;
 }
 .theme-dark .claudian-thinking:has(> .jarvis-mind)::after {
   left: 42px;
@@ -388,7 +391,9 @@
   background-clip: text;
   text-shadow: none;
   filter: drop-shadow(0 0 5px rgba(0, 216, 255, 0.5));
-  animation: jarvis-thinking-shimmer 2.6s linear infinite;
+  animation:
+    jarvis-thinking-shimmer 2.6s linear infinite,
+    jarvis-thinking-pulse 1.5s ease-in-out infinite;
 }
 /* The timer: small, muted, never wrapped */
 .theme-dark .claudian-thinking-hint {
@@ -405,10 +410,17 @@
   from { background-position: 100% 0; }
   to { background-position: -50% 0; }
 }
+/* Same as Claudian's thinking-pulse, which this snippet removes from the line */
+@keyframes jarvis-thinking-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
 @keyframes jarvis-thinking-scan {
-  /* The streak travels half the line's length past each end before turning back */
-  from { background-position: -115% 0, 0 0; }
-  to { background-position: 215% 0, 0 0; }
+  /* The streak, 30% of the line, turns when its bright middle touches an
+     end, so it never leaves the line. With that size, -21% and 121% put
+     the middle exactly on the ends. */
+  from { background-position: -21% 0, 0 0; }
+  to { background-position: 121% 0, 0 0; }
 }
 
 
