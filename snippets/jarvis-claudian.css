@@ -68,8 +68,8 @@
 .theme-dark .claudian-welcome.jarvis-charging {
   --jarvis-reactor-charge: 1;
 }
-.theme-dark .claudian-welcome::before,
-.theme-dark .claudian-welcome::after {
+.theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::before,
+.theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -81,7 +81,7 @@
   pointer-events: none;
 }
 /* Yttre ring: åtta segment med svans som sveper medurs */
-.theme-dark .claudian-welcome::before {
+.theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::before {
   width: var(--jarvis-reactor-size);
   background: conic-gradient(rgba(0, 216, 255, 0.01), rgba(0, 216, 255, calc(0.2 + 0.2 * var(--jarvis-reactor-charge))));
   -webkit-mask:
@@ -94,7 +94,7 @@
   animation: jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite;
 }
 /* Inre bågar som snurrar moturs */
-.theme-dark .claudian-welcome::after {
+.theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::after {
   width: calc(var(--jarvis-reactor-size) * 0.56);
   box-sizing: border-box;
   border: 3px solid transparent;
@@ -104,15 +104,57 @@
   filter: drop-shadow(0 0 6px rgba(0, 216, 255, calc(0.3 + 0.3 * var(--jarvis-reactor-charge))));
   animation: jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse;
 }
-.theme-dark .claudian-welcome.jarvis-charging::before {
+.theme-dark .claudian-welcome.jarvis-charging:not(:has(> .jarvis-mind-welcome))::before {
   animation:
     jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite,
     jarvis-reactor-breathe 1.8s ease-in-out infinite;
 }
-.theme-dark .claudian-welcome.jarvis-charging::after {
+.theme-dark .claudian-welcome.jarvis-charging:not(:has(> .jarvis-mind-welcome))::after {
   animation:
     jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse,
     jarvis-reactor-breathe 1.8s ease-in-out infinite;
+}
+/* Jarvis i stället för reaktorn: pluginet Jarvis HUD FX ritar hologrammet
+   på en canvas bakom välkomsttexten. Lugnt tills du skriver, då lyser det
+   upp och börjar röra på sig. Klick på J.A.R.V.I.S. eller hologrammet
+   retar upp det. Utan pluginet visas reaktorringarna ovan som förut. */
+.theme-dark .jarvis-mind-welcome {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: var(--jarvis-reactor-size);
+  height: auto;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0.7;
+  filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.3));
+  cursor: var(--j-cursor-target, pointer);
+}
+/* Läsbarhet: texten får en mörk gloria och en svag mörk bakgrund, så
+   linjerna bakom dämpas precis där bokstäverna sitter */
+.theme-dark .claudian-welcome:has(> .jarvis-mind-welcome) {
+  --jarvis-halo: 0 0 3px #05090d, 0 0 8px #05090d, 0 0 16px rgba(5, 9, 13, 0.9);
+}
+.theme-dark .claudian-welcome:has(> .jarvis-mind-welcome) > :is(.claudian-welcome-text, .claudian-welcome-linked-content) {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 2px 16px;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, rgba(5, 9, 13, 0.8), rgba(5, 9, 13, 0.5) 70%, transparent);
+  text-shadow: var(--jarvis-halo);
+}
+.theme-dark .claudian-welcome:has(> .jarvis-mind-welcome) > .claudian-welcome-brand {
+  text-shadow: var(--j-glow), var(--jarvis-halo);
+}
+.theme-dark .claudian-welcome:has(> .jarvis-mind-welcome) > .claudian-welcome-greeting[data-jarvis-greeting] {
+  text-shadow: 0 0 8px rgba(0, 216, 255, 0.35), var(--jarvis-halo);
+}
+
+/* När du skickar: hologrammet drar ihop sig och slår ut som ringen gjorde */
+.theme-dark .claudian-welcome.jarvis-welcome-exit > .jarvis-mind-welcome {
+  will-change: transform, opacity;
+  animation: jarvis-exit-ring 0.85s cubic-bezier(0.3, 0, 0.2, 1) forwards;
 }
 @keyframes jarvis-reactor-breathe {
   0%, 100% { opacity: 1; }
@@ -135,18 +177,18 @@
   transition: none;
   animation: jarvis-exit-fade 0.9s linear forwards;
 }
-.theme-dark .claudian-welcome.jarvis-welcome-exit::before,
-.theme-dark .claudian-welcome.jarvis-welcome-exit::after,
+.theme-dark .claudian-welcome.jarvis-welcome-exit:not(:has(> .jarvis-mind-welcome))::before,
+.theme-dark .claudian-welcome.jarvis-welcome-exit:not(:has(> .jarvis-mind-welcome))::after,
 .theme-dark .claudian-welcome.jarvis-welcome-exit .claudian-welcome-text,
 .jarvis-burst > * {
   will-change: transform, opacity;
 }
-.theme-dark .claudian-welcome.jarvis-welcome-exit::before {
+.theme-dark .claudian-welcome.jarvis-welcome-exit:not(:has(> .jarvis-mind-welcome))::before {
   animation:
     jarvis-reactor-spin 24s linear var(--jarvis-fx-offset, 0ms) infinite,
     jarvis-exit-ring 0.85s cubic-bezier(0.3, 0, 0.2, 1) forwards;
 }
-.theme-dark .claudian-welcome.jarvis-welcome-exit::after {
+.theme-dark .claudian-welcome.jarvis-welcome-exit:not(:has(> .jarvis-mind-welcome))::after {
   animation:
     jarvis-reactor-spin 16s linear var(--jarvis-fx-offset, 0ms) infinite reverse,
     jarvis-exit-arcs 0.22s cubic-bezier(0.6, 0, 0.9, 0.5) forwards;
@@ -289,6 +331,85 @@
   border-left-color: rgba(0, 216, 255, 0.25);
   color: var(--tx2);
 }
+
+/* Arbetsraden medan Jarvis jobbar: ett ljussvep glider genom verbet och
+   en skanningslinje sveper under raden. Timern blir en diskret
+   telemetrirad som inte bryts mitt i. Pluginet Jarvis HUD FX lägger till
+   Jarvis medvetande framför: en sfär av neuroner där signaler tänds. */
+.theme-dark .claudian-thinking {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 0 8px;
+}
+.theme-dark .claudian-thinking:has(> .jarvis-mind) {
+  min-height: 36px;
+  padding-left: 42px;
+}
+/* Medvetandet: canvasen ritas av pluginet, 40 px som MIND_SIZE i main.js */
+.theme-dark .jarvis-mind {
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin-top: -22px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.45));
+}
+/* Skanningslinjen: ett ljusstreck som sveper fram och tillbaka */
+.theme-dark .claudian-thinking::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 1px;
+  background:
+    linear-gradient(90deg, transparent, #7deeff, transparent) 0 0 / 30% 100% no-repeat,
+    rgba(0, 216, 255, 0.12);
+  filter: drop-shadow(0 0 3px var(--j-cyan));
+  animation: jarvis-thinking-scan 7s ease-in-out infinite alternate;
+}
+.theme-dark .claudian-thinking:has(> .jarvis-mind)::after {
+  left: 42px;
+}
+/* Verbet: ljussvep genom texten */
+.theme-dark .claudian-thinking > span:not(.claudian-thinking-hint) {
+  color: transparent;
+  background: linear-gradient(100deg, var(--j-cyan) 40%, #e6fbff 50%, var(--j-cyan) 60%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 5px rgba(0, 216, 255, 0.5));
+  animation: jarvis-thinking-shimmer 2.6s linear infinite;
+}
+/* Timern: liten, dämpad, aldrig radbruten */
+.theme-dark .claudian-thinking-hint {
+  font-family: var(--font-monospace);
+  font-size: 0.72em;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--tx3);
+  text-shadow: none;
+}
+@keyframes jarvis-thinking-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -50% 0; }
+}
+@keyframes jarvis-thinking-scan {
+  /* Ljusstrecket glider halva linjens längd ut förbi varje ände innan det vänder */
+  from { background-position: -115% 0, 0 0; }
+  to { background-position: 215% 0, 0 0; }
+}
+
 
 /* ---------- 5. Inmatningsrutan ---------- */
 .theme-dark .claudian-input-wrapper {
@@ -690,6 +811,8 @@
 }
 
 /* ---------- 13. Av-knappar och tillgänglighet ---------- */
+.theme-dark.jarvis-no-motion .claudian-thinking::after,
+.theme-dark.jarvis-no-motion .claudian-thinking > span,
 .theme-dark.jarvis-no-motion .claudian-tab-badge-streaming,
 .theme-dark.jarvis-no-motion .claudian-session-running-indicator::before,
 .theme-dark.jarvis-no-motion .claudian-session-running-indicator::after,
@@ -697,14 +820,16 @@
 .theme-dark.jarvis-no-motion .claudian-session-group-running-indicator::after { animation: none; }
 .theme-dark.jarvis-no-motion .jarvis-just-completed::before,
 .theme-dark.jarvis-no-motion .jarvis-just-completed::after { display: none; }
-.theme-dark.jarvis-no-motion .claudian-welcome::before,
-.theme-dark.jarvis-no-motion .claudian-welcome::after,
+.theme-dark.jarvis-no-motion .claudian-welcome:not(:has(> .jarvis-mind-welcome))::before,
+.theme-dark.jarvis-no-motion .claudian-welcome:not(:has(> .jarvis-mind-welcome))::after,
 .theme-dark.jarvis-no-motion .claudian-welcome-greeting.jarvis-reboot { animation: none; }
 .theme-dark.jarvis-no-motion .claudian-welcome.jarvis-welcome-exit { display: none; }
 .theme-dark.jarvis-no-motion .claudian-history-item.jarvis-archive-ghost { display: none; }
-.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging::before,
-.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging::after { animation: none; }
+.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging:not(:has(> .jarvis-mind-welcome))::before,
+.theme-dark.jarvis-no-motion .claudian-welcome.jarvis-charging:not(:has(> .jarvis-mind-welcome))::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
+  .theme-dark .claudian-thinking::after,
+  .theme-dark .claudian-thinking > span,
   .theme-dark .claudian-tab-badge-streaming,
   .theme-dark .claudian-session-running-indicator::before,
   .theme-dark .claudian-session-running-indicator::after,
@@ -712,11 +837,11 @@
   .theme-dark .claudian-session-group-running-indicator::after { animation: none; }
   .theme-dark .jarvis-just-completed::before,
   .theme-dark .jarvis-just-completed::after { display: none; }
-  .theme-dark .claudian-welcome::before,
-  .theme-dark .claudian-welcome::after,
+  .theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::before,
+  .theme-dark .claudian-welcome:not(:has(> .jarvis-mind-welcome))::after,
   .theme-dark .claudian-welcome-greeting.jarvis-reboot { animation: none; }
   .theme-dark .claudian-welcome.jarvis-welcome-exit { display: none; }
   .theme-dark .claudian-history-item.jarvis-archive-ghost { display: none; }
-  .theme-dark .claudian-welcome.jarvis-charging::before,
-  .theme-dark .claudian-welcome.jarvis-charging::after { animation: none; }
+  .theme-dark .claudian-welcome.jarvis-charging:not(:has(> .jarvis-mind-welcome))::before,
+  .theme-dark .claudian-welcome.jarvis-charging:not(:has(> .jarvis-mind-welcome))::after { animation: none; }
 }

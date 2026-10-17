@@ -13,11 +13,11 @@
  *    of the week and the calendar. Secret: clicking "J.A.R.V.I.S." gives a
  *    new line.
  *
- * 3. Reactor. Marks the welcome screen "jarvis-charging" while you type, so
- *    the arc reactor behind it powers up. Claudian hides the welcome screen
- *    at once when you send, so the plugin lays a copy over it, adds the
- *    ignition layers (flash and shockwave) and removes it when the animation
- *    is done. Visual only.
+ * 3. Welcome. Marks the welcome screen "jarvis-charging" while you type, so
+ *    the calm Jarvis behind it (see 6) starts to stir. Claudian hides the
+ *    welcome screen at once when you send, so the plugin lays a copy over
+ *    it, moves Jarvis into the copy, adds the ignition layers (flash and
+ *    shockwave) and removes it when the animation is done. Visual only.
  *
  * 4. Archive effect. On Archive the row hides at once and a copy takes its
  *    place that "closes itself" (jarvis-claudian.css). Claudian rebuilds
@@ -32,6 +32,12 @@
  *    own folder. The optional Claude Code hook greeting-hook.sh hands it to
  *    Claude with that message and removes the file, so Claude knows what you
  *    are replying to. Without the hook the file is simply overwritten next time.
+ *
+ * 6. Mind. A hologram of Jarvis, drawn by one engine in two versions: a
+ *    small busy one in front of Claudian's working line ("Thinking...")
+ *    while Claude works, and a large calm one behind the welcome screen
+ *    that clicks on J.A.R.V.I.S. provoke.
+ *    With reduced motion it draws one still frame.
  */
 const { Plugin, FileSystemAdapter } = require("obsidian");
 const fs = require("fs");
@@ -67,6 +73,24 @@ const CHARGING_CLASS = "jarvis-charging";
 const EXIT_CLASS = "jarvis-welcome-exit";
 // Must cover the longest exit animation in jarvis-claudian.css.
 const EXIT_MS = 950;
+
+const THINKING = ".claudian-thinking";
+const MESSAGE_CONTENT = ".claudian-message-content";
+const MIND_CLASS = "jarvis-mind";
+const MIND_SIZE = 40; // CSS pixels, matched in jarvis-claudian.css
+const MIND_NODES = 30;
+// Speed of the whole hologram, 1 is full speed.
+const MIND_PACE = 0.5;
+// One more neuron wakes up for every this long Claude has been working.
+const MIND_WAKE_EVERY_MS = 10000;
+const MIND_WAKE_MAX = 8;
+const NO_MOTION_CLASS = "jarvis-no-motion";
+const WELCOME_MIND_CLASS = "jarvis-mind-welcome";
+// Drawing size of the welcome Jarvis in CSS pixels; CSS scales it down to fit.
+const WELCOME_MIND_SIZE = 440;
+// Neurons that fire when you click Jarvis, and when you send.
+const PROVOKE_NEURONS = 4;
+const LAUNCH_NEURONS = 14;
 
 // Read and removed by greeting-hook.sh.
 const GREETING_FILE = "greeting.txt";
@@ -301,6 +325,411 @@ function burst(doc) {
   return el;
 }
 
+// The mind: a hologram of Jarvis thinking, modelled on Jarvis in Age of
+// Ultron. Shells of broken, tick-marked arcs turn at their own speeds around
+// an eye with a slowly breathing pupil, spokes and a tilted band, filaments
+// crackle in and out, and signals set off chain reactions in a network of
+// neurons. One engine draws both versions, so a change shows in both:
+//
+// - Working: small, in front of Claudian's working line. Thoughts fire all
+//   the time, and the longer Claude works the more neurons wake up and
+//   shine bright, one every MIND_WAKE_EVERY_MS from when the response
+//   started.
+// - Calm: large, behind the welcome screen. Nothing fires on its own. While
+//   you type it brightens and starts to stir, and spike() provokes it.
+//
+// Everything is drawn in MIND_SIZE units and scaled to the canvas, with
+// `thin` keeping lines fine when the canvas is large. Each canvas runs its
+// own loop, which stops once the canvas leaves the page.
+function mind(doc, options = {}) {
+  const {
+    size = MIND_SIZE,
+    count = MIND_NODES,
+    thin = 1,
+    pace = MIND_PACE,
+    start = null,
+    calm = false,
+    listening = () => false,
+    className = MIND_CLASS,
+  } = options;
+  const win = doc.defaultView ?? window;
+  const canvas = doc.createElement("canvas");
+  canvas.className = className;
+  canvas.setAttribute("aria-hidden", "true");
+  const dpr = win.devicePixelRatio || 1;
+  canvas.width = canvas.height = Math.round(size * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.scale((dpr * size) / MIND_SIZE, (dpr * size) / MIND_SIZE);
+  const lw = (w) => (ctx.lineWidth = w * thin);
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const TAU = Math.PI * 2;
+  const c = MIND_SIZE / 2;
+  const R = MIND_SIZE * 0.42;
+
+  // Shells: concentric rings of broken arcs. The outer ones carry tick marks.
+  // The arcs are spread evenly around each ring, with a little jitter, so
+  // the sphere stays balanced.
+  const shells = [0.4, 0.56, 0.7, 0.84, 0.98].map((f, i) => {
+    const n = 3 + Math.floor(Math.random() * 3);
+    return {
+      r: f * R,
+      speed: rand(0.2, 0.7) * (i % 2 ? -1 : 1),
+      phase: rand(0, TAU),
+      ticks: i >= 2,
+      segs: Array.from({ length: n }, (_, k) => ({
+        start: (k * TAU) / n + rand(-0.15, 0.15),
+        len: (TAU / n) * rand(0.5, 0.8),
+        alpha: 1,
+        target: 1,
+        next: 0,
+      })),
+    };
+  });
+
+  // Neurons in a loose disc, drifting a little in place. Each links to its
+  // nearest neighbours.
+  const nodes = Array.from({ length: count }, () => {
+    const a = rand(0, TAU);
+    const r = R * Math.sqrt(Math.random()) * 0.92;
+    return { x: Math.cos(a) * r, y: Math.sin(a) * r, f: rand(0.5, 1.4), p: rand(0, TAU), glow: 0 };
+  });
+  const links = new Map(nodes.map((_, i) => [i, new Set()]));
+  nodes.forEach((n, i) => {
+    nodes
+      .map((m, j) => [j, (n.x - m.x) ** 2 + (n.y - m.y) ** 2])
+      .filter(([j]) => j !== i)
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 3)
+      .forEach(([j]) => {
+        links.get(i).add(j);
+        links.get(j).add(i);
+      });
+  });
+  const edges = [];
+  for (const [i, set] of links) for (const j of set) if (i < j) edges.push([i, j]);
+
+  // Signals keep their brightness as they travel, so a thought that starts in a
+  // neuron that is awake stays bright through the whole chain.
+  const signals = [];
+  const fire = (from, depth, lit = false) => {
+    nodes[from].glow = 1;
+    const next = [...links.get(from)];
+    const count = depth === 0 ? 2 : Math.random() < 0.55 ? 1 : 0;
+    const bright = lit || nodes[from].awake;
+    for (let k = 0; k < count && next.length; k++) {
+      const to = next.splice(Math.floor(Math.random() * next.length), 1)[0];
+      signals.push({ from, to, t: 0, speed: rand(0.03, 0.06), depth, bright });
+    }
+  };
+
+  // The crackle: on an uneven beat, arcs, spokes and the band get a new
+  // brightness to ease towards, and filaments and sparks fade in and out.
+  // Easing instead of snapping keeps it smooth at a calm pace.
+  let filaments = [];
+  let sparks = [];
+  const spokes = Array.from({ length: 7 }, () => ({ a: rand(0, TAU), reach: rand(0.7, 1.08), alpha: 0.5, target: 0.5 }));
+  const band = { alpha: 1, target: 1 };
+  const fade = (item, now) => item.alpha * Math.sin(Math.PI * Math.min(1, Math.max(0, (now - item.born) / (item.until - item.born))));
+  const point = (reach) => {
+    const a = rand(0, TAU);
+    const r = R * reach * Math.sqrt(Math.random());
+    return [c + Math.cos(a) * r, c + Math.sin(a) * r];
+  };
+  const crackle = (now) => {
+    for (const shell of shells) {
+      // Each arc keeps its brightness for a while, so the rings shimmer
+      // slowly instead of blinking.
+      for (const seg of shell.segs) {
+        if (now < seg.next) continue;
+        seg.target = Math.random() < 0.1 ? 0.3 : rand(0.55, 1);
+        seg.next = now + rand(700, 2000);
+      }
+    }
+    filaments = filaments.filter((f) => f.until > now);
+    while (filaments.length < 9) {
+      const [x1, y1] = point(0.9);
+      const [x2, y2] = point(Math.random() < 0.25 ? 1.2 : 0.95);
+      filaments.push({ x1, y1, x2, y2, born: now, until: now + rand(250, 900), alpha: rand(0.3, 0.75) });
+    }
+    sparks = sparks.filter((sk) => sk.until > now);
+    while (sparks.length < 6) {
+      const [x, y] = point(1.05);
+      sparks.push({ x, y, born: now, until: now + rand(150, 500), alpha: 0.9 });
+    }
+    for (const sp of spokes) {
+      sp.target = rand(0.25, 0.75);
+      // A spoke that moves fades out first, then comes back at its new angle.
+      if (sp.alpha < 0.05 && sp.moving) Object.assign(sp, { a: rand(0, TAU), reach: rand(0.7, 1.08), moving: false });
+      if (Math.random() < 0.04) sp.moving = true;
+      if (sp.moving) sp.target = 0;
+    }
+    band.target = rand(0.7, 1);
+  };
+  const ease = (item, k) => {
+    item.alpha += (item.target - item.alpha) * k;
+  };
+
+  // Wakes one more neuron. A new one ignites with a flash, a small ring
+  // and a bright chain reaction; the ones already awake just appear.
+  let awake = 0;
+  const wakeTarget = () =>
+    start === null ? 0 : Math.min(MIND_WAKE_MAX, Math.floor((Date.now() - start) / MIND_WAKE_EVERY_MS));
+  const ignite = (now, burst) => {
+    const asleep = nodes.map((n, i) => i).filter((i) => !nodes[i].awake);
+    const i = asleep[Math.floor(Math.random() * asleep.length)];
+    nodes[i].awake = true;
+    awake++;
+    if (!burst) return;
+    nodes[i].born = now;
+    fire(i, 0, true);
+  };
+  while (awake < wakeTarget()) ignite(0, false);
+
+  // Calm mode: `level` rises while you type, `flash` jumps on a spike and
+  // fades. Both brighten the hologram; the flash also makes the pupil
+  // contract, as if startled.
+  let level = 0;
+  let flash = 0;
+  let clock = 0;
+  let last = null;
+  let nextCrackle = 0;
+  let nextThought = 0;
+
+  // Everything runs on its own clock, slowed by `pace` and sped up a little
+  // while listening. Waking up stays on real time.
+  const draw = (real, animate) => {
+    const step = last === null ? 16.7 : Math.min(real - last, 50);
+    last = real;
+    const stir = listening() ? 1 : 0;
+    level += (stir - level) * (1 - Math.pow(0.97, step / 16.7));
+    clock += step * pace * (1 + 0.6 * level);
+    const now = clock;
+    const dt = (step * pace * (1 + 0.6 * level)) / 16.7;
+    flash = Math.max(0, flash - 0.02 * dt);
+    const t = now / 1000;
+    if (now > nextCrackle) {
+      crackle(now);
+      nextCrackle = now + rand(50, 110);
+    }
+    const k = 1 - Math.pow(0.8, dt);
+    const slow = 1 - Math.pow(0.94, dt);
+    for (const shell of shells) for (const seg of shell.segs) ease(seg, slow);
+    for (const sp of spokes) ease(sp, k);
+    ease(band, k);
+    ctx.clearRect(0, 0, MIND_SIZE, MIND_SIZE);
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = Math.min(1, (calm ? 0.65 + 0.25 * level : 1) + 0.35 * flash);
+
+    // Soft glow behind the eye, brightest around the iris and dim in the
+    // pupil. The pupil dilates and contracts on an uneven rhythm.
+    const breath = 0.65 + 0.2 * Math.sin(t * 1.7) + 0.15 * Math.sin(t * 4.3 + 1);
+    const iris = R * (0.17 + 0.03 * Math.sin(t * 0.9) + 0.015 * Math.sin(t * 2.3 + 2)) * (1 - 0.35 * flash);
+    const glow = ctx.createRadialGradient(c, c, 0, c, c, R * 0.75);
+    glow.addColorStop(0, "rgba(0, 216, 255, 0.05)");
+    glow.addColorStop(iris / (R * 0.75), `rgba(125, 238, 255, ${0.45 * breath + 0.4 * flash})`);
+    glow.addColorStop(1, "rgba(0, 216, 255, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, MIND_SIZE, MIND_SIZE);
+
+    // Outer glow: a faint, steady halo hugging the edge of the sphere.
+    // It ends before the canvas edge, or the corners would cut it square.
+    const halo = ctx.createRadialGradient(c, c, R * 0.82, c, c, R * 1.17);
+    halo.addColorStop(0, "rgba(0, 216, 255, 0)");
+    halo.addColorStop(0.4, `rgba(0, 216, 255, ${0.035 + 0.06 * flash})`);
+    halo.addColorStop(1, "rgba(0, 216, 255, 0)");
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 0, MIND_SIZE, MIND_SIZE);
+
+    // The band: a tilted ring across the middle, seen almost edge on.
+    ctx.save();
+    ctx.translate(c, c);
+    ctx.rotate(-0.14 + 0.04 * Math.sin(t * 0.4));
+    ctx.scale(1, 0.26);
+    lw(0.6);
+    for (const [r, alpha] of [[R * 1.04, 0.55], [R * 0.94, 0.35]]) {
+      ctx.strokeStyle = `rgba(125, 238, 255, ${alpha * band.alpha})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, TAU);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Spokes: straight lines from the iris out to the shell, flickering.
+    lw(0.4);
+    for (const sp of spokes) {
+      ctx.strokeStyle = `rgba(125, 238, 255, ${sp.alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(c + Math.cos(sp.a) * iris * 1.4, c + Math.sin(sp.a) * iris * 1.4);
+      ctx.lineTo(c + Math.cos(sp.a) * R * sp.reach, c + Math.sin(sp.a) * R * sp.reach);
+      ctx.stroke();
+    }
+
+    // The eye: a bright iris ring, a thinner broken ring around it, and a
+    // faint inner ring at the edge of the pupil.
+    ctx.strokeStyle = `rgba(230, 251, 255, ${0.6 + 0.35 * breath})`;
+    lw(0.9);
+    ctx.beginPath();
+    ctx.arc(c, c, iris, 0, TAU);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(125, 238, 255, 0.7)";
+    lw(0.45);
+    for (let k = 0; k < 4; k++) {
+      const a = t * 0.5 + (k * TAU) / 4;
+      ctx.beginPath();
+      ctx.arc(c, c, iris * 1.5, a, a + 1.2);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = "rgba(0, 216, 255, 0.5)";
+    ctx.beginPath();
+    ctx.arc(c, c, iris * 0.6, 0, TAU);
+    ctx.stroke();
+
+    // Shells: perfect circles, each turning its own way.
+    shells.forEach((shell, i) => {
+      ctx.save();
+      ctx.translate(c, c);
+      ctx.rotate(shell.phase + t * shell.speed);
+      for (const seg of shell.segs) {
+        ctx.strokeStyle = `rgba(125, 238, 255, ${0.55 * seg.alpha})`;
+        lw(0.5);
+        ctx.beginPath();
+        ctx.arc(0, 0, shell.r, seg.start, seg.start + seg.len);
+        ctx.stroke();
+        if (!shell.ticks) continue;
+        ctx.strokeStyle = `rgba(0, 216, 255, ${0.7 * seg.alpha})`;
+        lw(0.7);
+        ctx.beginPath();
+        for (let a = seg.start; a < seg.start + seg.len; a += 0.2) {
+          // The outer ticks are jagged, each with its own fixed length.
+          const out = i === shells.length - 1 ? 1.8 + 0.7 * Math.sin(a * 7.3 + seg.start * 13) : 1.3;
+          ctx.moveTo(Math.cos(a) * shell.r, Math.sin(a) * shell.r);
+          ctx.lineTo(Math.cos(a) * (shell.r + out), Math.sin(a) * (shell.r + out));
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    // Meridians: two arcs swinging slowly, so it reads as a sphere.
+    lw(0.45);
+    for (let m = 0; m < 2; m++) {
+      const swing = Math.cos(t * 0.5 + m * 1.9);
+      ctx.save();
+      ctx.translate(c, c);
+      ctx.rotate(0.3 + m * 1.2);
+      ctx.scale(Math.max(0.05, Math.abs(swing)), 1);
+      ctx.strokeStyle = `rgba(125, 238, 255, ${0.35})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, R * 0.95, -1.2, 1.2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Filaments.
+    lw(0.4);
+    for (const f of filaments) {
+      ctx.strokeStyle = `rgba(125, 238, 255, ${fade(f, now)})`;
+      ctx.beginPath();
+      ctx.moveTo(f.x1, f.y1);
+      ctx.lineTo(f.x2, f.y2);
+      ctx.stroke();
+    }
+
+    // Neurons and synapses.
+    const p = nodes.map((n) => ({
+      x: c + n.x + Math.sin(t * n.f + n.p) * 0.7,
+      y: c + n.y + Math.cos(t * n.f * 0.8 + n.p) * 0.7,
+    }));
+    lw(0.4);
+    for (const [i, j] of edges) {
+      const lit = Math.max(nodes[i].glow, nodes[j].glow);
+      ctx.strokeStyle = `rgba(0, 216, 255, ${0.12 + 0.6 * lit})`;
+      ctx.beginPath();
+      ctx.moveTo(p[i].x, p[i].y);
+      ctx.lineTo(p[j].x, p[j].y);
+      ctx.stroke();
+    }
+    if (animate && awake < wakeTarget()) ignite(now, true);
+    // Thoughts start at random moments, not on a beat. Calm, only while
+    // listening, and far apart.
+    if (animate && now > nextThought && (!calm || stir)) {
+      fire(Math.floor(Math.random() * nodes.length), 0);
+      nextThought = now + (calm ? rand(500, 1400) : rand(100, 450));
+    }
+    for (let k = signals.length - 1; k >= 0; k--) {
+      const s = signals[k];
+      s.t += s.speed * dt;
+      if (s.t >= 1) {
+        signals.splice(k, 1);
+        if (s.depth < 6) fire(s.to, s.depth + 1, s.bright);
+        continue;
+      }
+      const a = p[s.from];
+      const b = p[s.to];
+      ctx.fillStyle = s.bright ? "rgba(255, 255, 255, 1)" : "rgba(230, 251, 255, 0.85)";
+      ctx.beginPath();
+      ctx.arc(a.x + (b.x - a.x) * s.t, a.y + (b.y - a.y) * s.t, 0.8 * thin, 0, TAU);
+      ctx.fill();
+    }
+    nodes.forEach((n, i) => {
+      const { x, y } = p[i];
+      if (n.glow > 0.05) {
+        const gr = 1.6 * thin;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, gr);
+        g.addColorStop(0, `rgba(230, 251, 255, ${0.8 * n.glow})`);
+        g.addColorStop(1, "rgba(0, 216, 255, 0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(x - gr, y - gr, gr * 2, gr * 2);
+      }
+      const age = n.born ? (now - n.born) / 900 : 1;
+      if (age < 1) {
+        ctx.strokeStyle = `rgba(125, 238, 255, ${0.8 * (1 - age)})`;
+        lw(0.4);
+        ctx.beginPath();
+        ctx.arc(x, y, (1 + age * 3.5) * thin, 0, TAU);
+        ctx.stroke();
+      }
+      ctx.fillStyle = n.awake ? "rgba(230, 251, 255, 0.95)" : `rgba(125, 238, 255, ${0.5 + 0.5 * n.glow})`;
+      ctx.beginPath();
+      ctx.arc(x, y, (n.awake ? 0.8 + (age < 1 ? 0.6 * (1 - age) : 0) : 0.55) * thin, 0, TAU);
+      ctx.fill();
+      n.glow = Math.max(0, n.glow - 0.035 * dt);
+    });
+
+    // Sparks.
+    for (const sk of sparks) {
+      ctx.fillStyle = `rgba(230, 251, 255, ${fade(sk, now)})`;
+      ctx.fillRect(sk.x - 0.35 * thin, sk.y - 0.35 * thin, 0.7 * thin, 0.7 * thin);
+    }
+  };
+
+  // Provokes it: several neurons fire at once in bright chain reactions
+  // and the eye flashes.
+  const spike = (neurons = 4) => {
+    flash = 1;
+    for (let k = 0; k < neurons; k++) fire(Math.floor(Math.random() * nodes.length), 0, true);
+  };
+
+  const still =
+    doc.body.classList.contains(NO_MOTION_CLASS) || win.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (still) {
+    for (let k = 0; k < 4; k++) nodes[Math.floor(Math.random() * count)].glow = 0.8;
+    draw(performance.now(), false);
+    return { canvas, spike: () => {} };
+  }
+  const loop = (now) => {
+    if (!canvas.isConnected && canvas.dataset.started) return;
+    if (canvas.isConnected) canvas.dataset.started = "1";
+    // A hidden canvas (the welcome screen in a busy chat) skips drawing.
+    if (canvas.offsetParent !== null) draw(now, true);
+    else last = null;
+    win.requestAnimationFrame(loop);
+  };
+  win.requestAnimationFrame(loop);
+  return { canvas, spike };
+}
+
 // Claudian's composer is a CodeMirror editor that shows a placeholder when empty.
 function hasText(input) {
   const content = input.querySelector(".cm-content") ?? input;
@@ -317,6 +746,7 @@ module.exports = class JarvisHudFx extends Plugin {
     this.welcomes = new WeakMap(); // welcome element -> time it was last shown
     this.archiving = new Set(); // conversation ids clicked to archive, not yet gone
     this.ghosts = new Map(); // conversation id -> { el, start, list, prevId, nextId }
+    this.minds = new WeakMap(); // welcome canvas -> its mind, for spike()
 
     this.welcomeObserver = new MutationObserver((mutations) => {
       for (const m of mutations) {
@@ -337,6 +767,7 @@ module.exports = class JarvisHudFx extends Plugin {
       this.app.workspace.iterateAllLeaves((leaf) => this.attach(leaf.view.containerEl.ownerDocument));
       this.greet();
       this.watchWelcomes();
+      this.think();
       this.scan();
     });
   }
@@ -348,6 +779,7 @@ module.exports = class JarvisHudFx extends Plugin {
     this.all(`.${ARCHIVE_GHOST_CLASS}`).forEach((el) => el.remove());
     this.all(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
     this.all(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
+    this.all(`.${MIND_CLASS}, .${WELCOME_MIND_CLASS}`).forEach((el) => el.remove());
     for (const doc of [...this.observers.keys()]) this.detach(doc);
   }
 
@@ -363,6 +795,7 @@ module.exports = class JarvisHudFx extends Plugin {
       this.watchWelcomes();
       // Hide re-rendered rows before the next paint, so they never flash back.
       this.hideArchiving();
+      this.think();
       this.schedule();
     });
     observer.observe(doc.body, {
@@ -375,6 +808,10 @@ module.exports = class JarvisHudFx extends Plugin {
       const brand = event.target.closest?.(BRAND);
       const greeting = brand?.parentElement?.querySelector(GREETING);
       if (greeting) this.setGreeting(greeting, true);
+      // Clicking J.A.R.V.I.S. or the hologram itself provokes it.
+      if (brand || event.target.classList?.contains(WELCOME_MIND_CLASS)) {
+        this.provoke(event.target.closest(WELCOME), PROVOKE_NEURONS);
+      }
     });
     // Capture phase, so it runs even if Claudian stops the click on the button.
     this.registerDomEvent(
@@ -525,6 +962,39 @@ module.exports = class JarvisHudFx extends Plugin {
     }
   }
 
+  // Gives every working line and welcome screen a mind, once.
+  think() {
+    for (const el of this.all(THINKING)) {
+      if (el.querySelector(`:scope > .${MIND_CLASS}`)) continue;
+      // The response keeps its start time, so the awake neurons carry over to the
+      // next working line in the same response.
+      const response = el.closest(MESSAGE_CONTENT) ?? el;
+      response.dataset.jarvisMindStart ??= String(Date.now());
+      el.prepend(mind(el.ownerDocument, { start: Number(response.dataset.jarvisMindStart) }).canvas);
+    }
+    // The welcome screen gets the calm Jarvis, which listens while you type.
+    for (const welcome of this.all(WELCOME)) {
+      if (welcome.classList.contains(EXIT_CLASS) || welcome.querySelector(`:scope > .${WELCOME_MIND_CLASS}`)) continue;
+      const jarvis = mind(welcome.ownerDocument, {
+        size: WELCOME_MIND_SIZE,
+        count: 70,
+        thin: 0.35,
+        pace: 0.3,
+        calm: true,
+        listening: () => welcome.classList.contains(CHARGING_CLASS),
+        className: WELCOME_MIND_CLASS,
+      });
+      this.minds.set(jarvis.canvas, jarvis);
+      welcome.prepend(jarvis.canvas);
+    }
+  }
+
+  // Spikes the welcome screen's Jarvis.
+  provoke(welcome, neurons) {
+    const canvas = welcome?.querySelector(`:scope > .${WELCOME_MIND_CLASS}`);
+    this.minds.get(canvas)?.spike(neurons);
+  }
+
   // Plays the exit only when the welcome screen goes away while you were
   // typing, so opening an existing chat does not fire the reactor.
   launch(welcome) {
@@ -540,6 +1010,15 @@ module.exports = class JarvisHudFx extends Plugin {
     const shown = this.welcomes.get(welcome) ?? performance.now();
     ghost.style.setProperty("--jarvis-fx-offset", `-${Math.round(performance.now() - shown)}ms`);
     ghost.appendChild(burst(wrapper.ownerDocument));
+    // A cloned canvas is blank, so the live Jarvis moves into the copy and
+    // every neuron spikes as it goes. The welcome screen gets a new one the
+    // next time it is shown.
+    const jarvis = welcome.querySelector(`:scope > .${WELCOME_MIND_CLASS}`);
+    if (jarvis) {
+      ghost.querySelector(`:scope > .${WELCOME_MIND_CLASS}`)?.remove();
+      ghost.prepend(jarvis);
+      this.minds.get(jarvis)?.spike(LAUNCH_NEURONS);
+    }
     wrapper.appendChild(ghost);
     window.setTimeout(() => ghost.remove(), EXIT_MS);
   }

@@ -36,8 +36,9 @@ A small companion plugin for Claudian. It does not modify Claudian.
 
 - **Completion effect:** when a Claudian session completes, HUD corner brackets lock onto the session row and a glowing check mark appears where the arc reactor spinner was. CSS alone cannot tell a session that just finished from one that is re-rendered later, so this part needs a few lines of JavaScript.
 - **Jarvis greetings:** the welcome screen says **J.A.R.V.I.S.** instead of Claudian, with one of 80+ dry Jarvis lines instead of "Hey there". Lines depend on the time of day, the day of the week and the calendar, from Halloween and Christmas to midsommar and kanelbullens dag. There is also a hidden way to ask Jarvis for another one.
-- **Welcome reactor:** the arc reactor behind the welcome screen powers up and breathes while you type. When you send the first message it ignites: the inner arcs collapse into the core, the core flashes, a shockwave goes out, the ring blows outward and the text switches off like an old CRT screen. Visual only, no sound, and only transform and opacity are animated so it stays smooth. The reactor itself is in the snippet, the plugin adds the typing and send effects.
+- **Welcome Jarvis:** the welcome screen shows a large, calm version of the Jarvis hologram below. Nothing fires on its own; while you type it brightens and starts to stir, and clicking J.A.R.V.I.S. or the hologram provokes it into a burst of firing neurons. When you send the first message every neuron spikes, the core flashes, a shockwave goes out, the hologram blows outward and the text switches off like an old CRT screen. Without the plugin the snippet shows an arc reactor there instead.
 - **Archive effect:** when you archive a Claudian session, the same HUD corner brackets lock onto the row, squeeze into a glowing line and the row closes itself while the list closes up. If Claudian has not removed the session after 20 seconds, for example because the archive failed, the row comes back.
+- **Jarvis thinking:** while Claude works, a small, busier version of the same hologram appears in front of Claudian's working line, modelled on Jarvis in Age of Ultron. Tick-marked shells turn around an eye whose pupil slowly dilates, spokes and a tilted band run through it, filaments crackle in and out, and signals fire through a network of neurons in chain reactions. For every 10 seconds Claude has been working, one more neuron wakes up and shines bright, so a long task visibly builds up. With reduced motion it draws one still frame. The snippet adds a light sweep through the working text, a scan line under it and a quieter timer, with or without the plugin.
 - **Greeting context (optional):** Claude knows which greeting you saw, so you can answer it. Reply "Yes, let's" to "Shall we get the hard thing done first?" and Claude gets the joke instead of asking what you mean. The greeting is not added to your message, it goes to Claude as hidden context with your first message only. Needs the hook below.
 
 1. Copy the files in `plugin/` into `.obsidian/plugins/jarvis-hud-fx/` in your vault.
@@ -76,7 +77,7 @@ If the plugin is removed, the hook finds no script and does nothing.
 | `snippets/jarvis-hud.css` | The main HUD styling |
 | `snippets/jarvis-callouts.css` | Custom callout types, e.g. `> [!calendar]` |
 | `snippets/jarvis-claudian.css` | Styling for the [Claudian](https://github.com/YishenTu/claudian) plugin (Claude Code in Obsidian). Requires `jarvis-hud.css` |
-| `plugin/` | Optional Jarvis HUD FX plugin, completion and archive effects, Jarvis greetings and welcome reactor effects for Claudian, plus `greeting-hook.sh` for the optional greeting context |
+| `plugin/` | Optional Jarvis HUD FX plugin, completion and archive effects, Jarvis greetings, the Jarvis hologram on the welcome screen and while Claude works for Claudian, plus `greeting-hook.sh` for the optional greeting context |
 
 ## Supported plugins
 
