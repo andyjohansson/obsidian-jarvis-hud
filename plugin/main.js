@@ -325,6 +325,11 @@ function burst(doc) {
   return el;
 }
 
+// @mind-engine:start
+// Everything between the mind-engine markers is copied into the desktop
+// wallpapers by build.mjs in desktop-jarvis-hud. Keep it free of Obsidian
+// APIs.
+//
 // The mind: a hologram of Jarvis thinking, modelled on Jarvis in Age of
 // Ultron. Shells of broken, tick-marked arcs turn at their own speeds around
 // an eye with a slowly breathing pupil, spokes and a tilted band, filaments
@@ -337,6 +342,8 @@ function burst(doc) {
 //   started.
 // - Calm: large, behind the welcome screen. Nothing fires on its own. While
 //   you type it brightens and starts to stir, and spike() provokes it.
+//   With `dream`, a lone thought fires now and then even when calm (the
+//   desktop wallpaper), and `fps` caps the frame rate to save power.
 //
 // Everything is drawn in MIND_SIZE units and scaled to the canvas, with
 // `thin` keeping lines fine when the canvas is large. Each canvas runs its
@@ -350,6 +357,8 @@ function mind(doc, options = {}) {
     start = null,
     calm = false,
     listening = () => false,
+    dream = null,
+    fps = 0,
     className = MIND_CLASS,
   } = options;
   const win = doc.defaultView ?? window;
@@ -652,10 +661,10 @@ function mind(doc, options = {}) {
     }
     if (animate && awake < wakeTarget()) ignite(now, true);
     // Thoughts start at random moments, not on a beat. Calm, only while
-    // listening, and far apart.
-    if (animate && now > nextThought && (!calm || stir)) {
+    // listening or dreaming, and far apart.
+    if (animate && now > nextThought && (!calm || stir || dream)) {
       fire(Math.floor(Math.random() * nodes.length), 0);
-      nextThought = now + (calm ? rand(500, 1400) : rand(100, 450));
+      nextThought = now + (!calm ? rand(100, 450) : stir ? rand(500, 1400) : rand(dream[0], dream[1]));
     }
     for (let k = signals.length - 1; k >= 0; k--) {
       const s = signals[k];
@@ -718,17 +727,22 @@ function mind(doc, options = {}) {
     draw(performance.now(), false);
     return { canvas, spike: () => {} };
   }
+  let drawn = 0;
   const loop = (now) => {
     if (!canvas.isConnected && canvas.dataset.started) return;
     if (canvas.isConnected) canvas.dataset.started = "1";
     // A hidden canvas (the welcome screen in a busy chat) skips drawing.
-    if (canvas.offsetParent !== null) draw(now, true);
-    else last = null;
+    if (canvas.offsetParent === null) last = null;
+    else if (!fps || now - drawn >= 1000 / fps - 2) {
+      drawn = now;
+      draw(now, true);
+    }
     win.requestAnimationFrame(loop);
   };
   win.requestAnimationFrame(loop);
   return { canvas, spike };
 }
+// @mind-engine:end
 
 // Claudian's composer is a CodeMirror editor that shows a placeholder when empty.
 function hasText(input) {

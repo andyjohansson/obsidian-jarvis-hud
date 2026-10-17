@@ -70,6 +70,10 @@ Register the hook in your vault's `.claude/settings.local.json` (or `.claude/set
 
 If the plugin is removed, the hook finds no script and does nothing.
 
+## Desktop wallpaper
+
+The plugin's Jarvis hologram also works as a moving desktop background on macOS. See [Desktop Jarvis HUD](https://github.com/andyjohansson/desktop-jarvis-hud). It builds its wallpapers from the engine in `plugin/main.js`, between the `@mind-engine` markers, so keep that part free of Obsidian APIs.
+
 ## Files
 
 | File | Purpose |
