@@ -77,6 +77,8 @@ const EXIT_MS = 950;
 const THINKING = ".claudian-thinking";
 const MESSAGE_CONTENT = ".claudian-message-content";
 const MIND_CLASS = "jarvis-mind";
+// Width of the working line's scan line, set by the plugin and read in jarvis-claudian.css.
+const LINE_WIDTH = "--jarvis-line-w";
 const MIND_SIZE = 40; // CSS pixels, matched in jarvis-claudian.css
 const MIND_NODES = 30;
 // Speed of the whole hologram, 1 is full speed.
@@ -761,6 +763,7 @@ module.exports = class JarvisHudFx extends Plugin {
     this.archiving = new Set(); // conversation ids clicked to archive, not yet gone
     this.ghosts = new Map(); // conversation id -> { el, start, list, prevId, nextId }
     this.minds = new WeakMap(); // welcome canvas -> its mind, for spike()
+    this.lines = new Map(); // working line -> resize observer measuring its scan line
 
     this.welcomeObserver = new MutationObserver((mutations) => {
       for (const m of mutations) {
@@ -794,6 +797,10 @@ module.exports = class JarvisHudFx extends Plugin {
     this.all(`.${CHARGING_CLASS}`).forEach((el) => el.classList.remove(CHARGING_CLASS));
     this.all(`.${DONE_CLASS}`).forEach((el) => el.classList.remove(DONE_CLASS));
     this.all(`.${MIND_CLASS}, .${WELCOME_MIND_CLASS}`).forEach((el) => el.remove());
+    for (const [el, observer] of this.lines) {
+      observer.disconnect();
+      el.style.removeProperty(LINE_WIDTH);
+    }
     for (const doc of [...this.observers.keys()]) this.detach(doc);
   }
 
@@ -986,6 +993,7 @@ module.exports = class JarvisHudFx extends Plugin {
       response.dataset.jarvisMindStart ??= String(Date.now());
       el.prepend(mind(el.ownerDocument, { start: Number(response.dataset.jarvisMindStart) }).canvas);
     }
+    this.measureLines();
     // The welcome screen gets the calm Jarvis, which listens while you type.
     for (const welcome of this.all(WELCOME)) {
       if (welcome.classList.contains(EXIT_CLASS) || welcome.querySelector(`:scope > .${WELCOME_MIND_CLASS}`)) continue;
@@ -1000,6 +1008,30 @@ module.exports = class JarvisHudFx extends Plugin {
       });
       this.minds.set(jarvis.canvas, jarvis);
       welcome.prepend(jarvis.canvas);
+    }
+  }
+
+  // Keeps --jarvis-line-w on every working line at the width of its scan
+  // line, so the CSS can put the light in the verb right above the streak.
+  // The scan line runs from the end of the left padding to the right edge.
+  measureLines() {
+    for (const [el, observer] of this.lines) {
+      if (el.isConnected) continue;
+      observer.disconnect();
+      this.lines.delete(el);
+    }
+    for (const el of this.all(THINKING)) {
+      if (this.lines.has(el)) continue;
+      const win = el.ownerDocument.defaultView ?? window;
+      const measure = () => {
+        const width = el.clientWidth - parseFloat(win.getComputedStyle(el).paddingLeft);
+        el.style.setProperty(LINE_WIDTH, `${width}px`);
+      };
+      // The window's own ResizeObserver, so it also works in pop-outs.
+      const observer = new win.ResizeObserver(measure);
+      observer.observe(el);
+      this.lines.set(el, observer);
+      measure();
     }
   }
 

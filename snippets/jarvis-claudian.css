@@ -333,14 +333,22 @@
   color: var(--tx2);
 }
 
-/* The working line while Jarvis works: a light sweep glides through the
-   verb and a scan line sweeps under the row. The timer becomes discreet
+/* The working line while Jarvis works: a scan line sweeps under the row
+   and its light shines up through the verb. The timer becomes discreet
    telemetry that never wraps. The Jarvis HUD FX plugin adds Jarvis's
    mind in front: a sphere of neurons where signals light up. Claudian
    pulses the opacity of the whole line, which made the mind look like it
    was dying, so only the verb pulses here. */
+/* Where the scan is, from 0 at the start of the line to 1 at the end. The
+   line animates it and the streak and the verb both read it, so the two
+   always move together. */
+@property --jarvis-scan {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
 .theme-dark .claudian-thinking {
-  animation: none;
+  animation: jarvis-thinking-scan 3s ease-in-out infinite alternate;
   position: relative;
   display: flex;
   flex-wrap: wrap;
@@ -366,7 +374,9 @@
   pointer-events: none;
   filter: drop-shadow(0 0 4px rgba(0, 216, 255, 0.45));
 }
-/* The scan line: a streak of light sweeping back and forth */
+/* The scan line: a streak of light, 30% of the line, sweeping back and
+   forth. Its bright middle sits at --jarvis-scan, so it turns when the
+   middle touches an end and never leaves the line. */
 .theme-dark .claudian-thinking::after {
   content: "";
   position: absolute;
@@ -375,15 +385,15 @@
   bottom: 2px;
   height: 1px;
   background:
-    linear-gradient(90deg, transparent, #7deeff, transparent) 0 0 / 30% 100% no-repeat,
+    linear-gradient(90deg, transparent, #7deeff, transparent)
+      calc((var(--jarvis-scan) - 0.15) / 0.7 * 100%) 0 / 30% 100% no-repeat,
     rgba(0, 216, 255, 0.12);
   filter: drop-shadow(0 0 3px var(--j-cyan));
-  animation: jarvis-thinking-scan 3s ease-in-out infinite alternate;
 }
 .theme-dark .claudian-thinking:has(> .jarvis-mind)::after {
   left: 42px;
 }
-/* The verb: a light sweep through the text */
+/* The verb: a light sweep through the text, on its own beat without the plugin */
 .theme-dark .claudian-thinking > span:not(.claudian-thinking-hint) {
   color: transparent;
   background: linear-gradient(100deg, var(--j-cyan) 40%, #e6fbff 50%, var(--j-cyan) 60%) 0 0 / 250% 100%;
@@ -394,6 +404,18 @@
   animation:
     jarvis-thinking-shimmer 2.6s linear infinite,
     jarvis-thinking-pulse 1.5s ease-in-out infinite;
+}
+/* With the plugin, which measures the scan line into --jarvis-line-w, the
+   light in the verb is the streak's own: same width, right above it. The
+   verb starts where the scan line starts, so the two share coordinates. */
+.theme-dark .claudian-thinking[style*="--jarvis-line-w"] > span:not(.claudian-thinking-hint) {
+  background:
+    linear-gradient(90deg, transparent, #e6fbff, transparent)
+      calc(var(--jarvis-line-w) * (var(--jarvis-scan) - 0.15)) 0 / calc(var(--jarvis-line-w) * 0.3) 100% no-repeat,
+    var(--j-cyan);
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: jarvis-thinking-pulse 1.5s ease-in-out infinite;
 }
 /* The timer: small, muted, never wrapped */
 .theme-dark .claudian-thinking-hint {
@@ -416,11 +438,8 @@
   50% { opacity: 1; }
 }
 @keyframes jarvis-thinking-scan {
-  /* The streak, 30% of the line, turns when its bright middle touches an
-     end, so it never leaves the line. With that size, -21% and 121% put
-     the middle exactly on the ends. */
-  from { background-position: -21% 0, 0 0; }
-  to { background-position: 121% 0, 0 0; }
+  from { --jarvis-scan: 0; }
+  to { --jarvis-scan: 1; }
 }
 
 
